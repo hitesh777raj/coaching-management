@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Shape & Shine Coaching Class // Udhana, Surat</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #08090b;
+      --bg-card: rgba(18, 20, 24, 0.85);
+      --accent-orange: #e8590c;
+      --accent-hover: #ff6b1a;
+      --text-white: #f5f6f8;
+      --text-muted: #848995;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-orange: rgba(232, 89, 12, 0.45);
+      --success: #2ed573;
+      --danger: #ff4757;
+      --insta: #e1306c;
+      --fb: #1877f2;
+      --wa: #25d366;
+      --yt: #ff0000;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+    body { background-color: var(--bg-dark); color: var(--text-white); overflow-x: hidden; width: 100vw; }
+    #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+
+    /* NAVBAR */
+    nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+      padding: 1.25rem 3rem; display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(20px); background: rgba(8, 9, 11, 0.8); border-bottom: 1px solid var(--border-subtle);
+      transition: padding 0.35s cubic-bezier(0.16, 1, 0.3, 1), background 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+    }
+    nav.scrolled {
+      padding: 0.85rem 3rem;
+      background: rgba(8, 9, 11, 0.94);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      border-bottom-color: rgba(232, 89, 12, 0.25);
+    }
+
+    .brand { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+    .brand-dot { width: 9px; height: 9px; background: var(--accent-orange); border-radius: 50%; box-shadow: 0 0 12px var(--accent-orange); }
+
+    .nav-links { display: flex; gap: 1.6rem; list-style: none; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 600; transition: color 0.25s, transform 0.25s; display: inline-block; }
+    .nav-links a:hover { color: var(--accent-orange); transform: translateY(-1px); }
+
+    .nav-actions { display: flex; gap: 0.8rem; align-items: center; }
+    .btn-pill {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: #fff;
+      padding: 0.6rem 1.2rem; border-radius: 30px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-pill:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(232, 89, 12, 0.35); }
+
+    #admin-link, #student-link { display: none; }
+
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px; background: rgba(46, 213, 115, 0.1);
+      border: 1px solid rgba(46, 213, 115, 0.3); color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700;
+    }
+    .live-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulseGreen 1.5s infinite; }
+    @keyframes pulseGreen { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.3); } }
+
+    .content-stream { position: relative; z-index: 10; }
+
+    /* HERO */
+    .hero { min-height: 100vh; padding: 10rem 3rem 4rem 3rem; display: flex; flex-direction: column; justify-content: center; }
+    .hero-container { max-width: 1000px; }
+    .badge-phenom {
+      display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle); padding: 8px 16px; border-radius: 6px; font-size: 0.75rem;
+      font-weight: 700; letter-spacing: 2px; color: var(--text-muted); margin-bottom: 2rem;
+    }
+    .text-3d-hero {
+      font-size: clamp(2.5rem, 6.5vw, 5rem); line-height: 1.08; font-weight: 900; letter-spacing: -2px;
+      text-transform: uppercase; color: #ffffff; text-shadow: 0 15px 40px rgba(232, 89, 12, 0.35); margin-bottom: 2rem;
+    }
+    .hero-subtext { font-size: clamp(1rem, 2.2vw, 1.15rem); color: var(--text-muted); max-width: 620px; line-height: 1.6; margin-bottom: 2.8rem; }
+
+    .cta-group { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+    .btn-phenom {
+      background: var(--accent-orange); color: #fff; border: none; padding: 1.1rem 2.2rem;
+      border-radius: 14px; font-weight: 700; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1.2px;
+      cursor: pointer; display: flex; align-items: center; gap: 0.75rem; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-phenom:hover { background: var(--accent-hover); transform: translateY(-3px); box-shadow: 0 14px 30px rgba(232, 89, 12, 0.45); }
+    .btn-phenom:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary { background: rgba(18, 20, 24, 0.85); border: 1px solid var(--border-subtle); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+
+    /* SECTIONS */
+    .section { padding: 6rem 3rem; }
+    .section-tag { color: var(--accent-orange); font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; margin-bottom: 0.5rem; text-transform: uppercase; }
+    .section-title { font-size: clamp(2rem, 3.5vw, 2.5rem); font-weight: 800; margin-bottom: 1rem; }
+    .section-sub { color: var(--text-muted); font-size: 0.95rem; max-width: 620px; margin-bottom: 3rem; line-height: 1.6; }
+
+    /* ACHIEVEMENTS COUNTERS */
+    .stats-counter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .stat-box {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px;
+      padding: 1.8rem; text-align: center; backdrop-filter: blur(14px); transition: transform 0.3s, border-color 0.3s;
+    }
+    .stat-box:hover { border-color: var(--border-orange); transform: translateY(-4px); }
+    .stat-number { font-family: 'Space Grotesk', sans-serif; font-size: 2.8rem; font-weight: 800; color: #fff; margin-bottom: 0.3rem; }
+    .stat-label { font-size: 0.82rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px;
+      padding: 2.2rem; backdrop-filter: blur(16px); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .card:hover { border-color: var(--border-orange); transform: translateY(-6px); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+
+    /* TEACHERS CARD STYLES */
+    .teacher-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px;
+      overflow: hidden; backdrop-filter: blur(16px); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+    .teacher-card:hover { border-color: var(--accent-orange); transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
+    .teacher-photo-wrap { width: 100%; height: 260px; overflow: hidden; background: #11141a; position: relative; }
+    .teacher-photo { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .teacher-card:hover .teacher-photo { transform: scale(1.05); }
+    .teacher-body { padding: 1.6rem; }
+    .teacher-name { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 0.2rem; }
+    .teacher-sub { color: var(--accent-orange); font-size: 0.85rem; font-weight: 700; margin-bottom: 0.8rem; }
+    .teacher-badges-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .t-badge { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; }
+    .teacher-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* GALLERY */
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.8rem; }
+    .gallery-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px;
+      overflow: hidden; backdrop-filter: blur(16px); transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer;
+    }
+    .gallery-card:hover { border-color: var(--accent-orange); transform: translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.6); }
+    .gallery-thumb-wrap { position: relative; width: 100%; height: 210px; overflow: hidden; background: #13161c; }
+    .gallery-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+    .gallery-card:hover .gallery-img { transform: scale(1.06); }
+    .gallery-body { padding: 1.5rem; }
+    .gallery-date-badge {
+      display: inline-block; background: rgba(232, 89, 12, 0.15); color: var(--accent-orange);
+      font-size: 0.72rem; font-weight: 800; padding: 3px 9px; border-radius: 6px; margin-bottom: 0.6rem;
+    }
+    .gallery-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+    .gallery-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* LIGHTBOX */
+    .lightbox-modal {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92);
+      backdrop-filter: blur(16px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 2rem;
+    }
+    .lightbox-content { max-width: 850px; width: 100%; background: #11141a; border: 1px solid var(--border-subtle); border-radius: 24px; overflow: hidden; animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .lightbox-img-box { width: 100%; max-height: 480px; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; }
+    .lightbox-img-box img { max-width: 100%; max-height: 480px; object-fit: contain; }
+    .lightbox-info { padding: 1.8rem; }
+
+    /* SOCIAL MEDIA ICONS */
+    .social-icons-wrap { display: flex; gap: 10px; align-items: center; margin-top: 1rem; }
+    .social-btn {
+      width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-size: 1.1rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .social-btn:hover { transform: translateY(-3px); }
+    .social-insta:hover { background: var(--insta); border-color: var(--insta); box-shadow: 0 6px 18px rgba(225, 48, 108, 0.5); }
+    .social-fb:hover { background: var(--fb); border-color: var(--fb); box-shadow: 0 6px 18px rgba(24, 119, 242, 0.5); }
+    .social-wa:hover { background: var(--wa); border-color: var(--wa); box-shadow: 0 6px 18px rgba(37, 211, 102, 0.5); }
+    .social-yt:hover { background: var(--yt); border-color: var(--yt); box-shadow: 0 6px 18px rgba(255, 0, 0, 0.5); }
+
+    .whatsapp-float {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 200;
+      background: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%;
+      display: flex; justify-content: center; align-items: center; font-size: 1.8rem;
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4); text-decoration: none; transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .whatsapp-float:hover { transform: scale(1.1); box-shadow: 0 15px 30px rgba(37, 211, 102, 0.6); }
+
+    #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 4000; display: flex; flex-direction: column; gap: 0.8rem; pointer-events: none; }
+    .toast { background: rgba(18, 20, 24, 0.98); border: 1px solid var(--border-subtle); color: #fff; padding: 1rem 1.6rem; border-radius: 14px; font-size: 0.9rem; font-weight: 600; pointer-events: auto; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+    .toast.show { transform: translateX(0); }
+    .toast.success { border-left: 4px solid var(--accent-orange); }
+    .toast.error { border-left: 4px solid var(--danger); }
+
+    @keyframes modalScaleIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(25px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; z-index: 2500; padding: 1.2rem;
+    }
+    .modal-box {
+      background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 2.2rem;
+      width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto; box-shadow: 0 30px 70px rgba(0,0,0,0.9);
+      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative;
+    }
+    .modal-box::-webkit-scrollbar { width: 5px; }
+    .modal-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+
+    .form-group { margin-bottom: 1.1rem; text-align: left; }
+    .form-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 0.4rem; }
+    .input-field, select {
+      width: 100%; background: #181b22 !important; border: 1px solid var(--border-subtle); border-radius: 12px;
+      padding: 0.9rem 1rem; color: #ffffff !important; font-size: 0.95rem; outline: none; transition: border 0.2s;
+    }
+    .input-hint { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; }
+    .input-field:focus, select:focus { border-color: var(--accent-orange); }
+
+    footer { border-top: 1px solid var(--border-subtle); padding: 4rem 3rem 2rem 3rem; background: #060708; }
+
+    /* SCROLL REVEAL ANIMATIONS */
+    .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-40px);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal-right {
+      opacity: 0;
+      transform: translateX(40px);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+    .reveal-scale {
+      opacity: 0;
+      transform: scale(0.92) translateY(20px);
+      transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: opacity, transform;
+    }
+
+    .reveal.is-visible,
+    .reveal-left.is-visible,
+    .reveal-right.is-visible,
+    .reveal-scale.is-visible {
+      opacity: 1;
+      transform: translate(0, 0) scale(1);
+    }
+
+    .delay-1 { transition-delay: 0.08s; }
+    .delay-2 { transition-delay: 0.16s; }
+    .delay-3 { transition-delay: 0.24s; }
+    .delay-4 { transition-delay: 0.32s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .reveal, .reveal-left, .reveal-right, .reveal-scale {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      nav.scrolled { padding: 0.8rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 8rem 1.5rem 3rem 1.5rem; }
+      .section { padding: 4rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="particle-canvas"></div>
+  <div id="toast-container"></div>
+
+  <a href="https://wa.me/919824528709?text=Hello%20Shape%20and%20Shine%20Coaching,%20I%20want%20inquiry%20regarding%20admission." target="_blank" class="whatsapp-float" title="Chat on WhatsApp">💬</a>
+
+  <!-- NAVBAR -->
+  <nav>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      SHAPE & SHINE COACHING
+    </div>
+    <ul class="nav-links">
+      <li><a href="#home">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#courses">Courses</a></li>
+      <li><a href="#teachers">Teachers</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#notices">Notices</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div class="live-badge"><div class="live-dot"></div><span id="live-count">5</span> Online</div>
+      <a href="admin.html" id="admin-link" class="btn-pill" style="border-color:var(--accent-orange); color:var(--accent-orange);">ADMIN SUITE →</a>
+      <a href="student.html" id="student-link" class="btn-pill">MY DASHBOARD</a>
+      <button class="btn-pill" id="auth-btn" onclick="openAuthModal(false)">SIGN IN</button>
+    </div>
+  </nav>
+
+  <div class="content-stream">
+    
+    <!-- 1. HERO SECTION -->
+    <section class="hero" id="home">
+      <div class="hero-container">
+        <div class="badge-phenom reveal delay-1"><span>✳</span> UDHANA, SURAT • ADMISSION OPEN 2026-27</div>
+        <h1 class="text-3d-hero reveal-left delay-2">SHAPE YOUR FUTURE <br/><span style="color: var(--accent-orange);">SHINE WITH EXCELLENCE</span></h1>
+        <p class="hero-subtext reveal-left delay-3">Premier educational tuition center in Udhana, Surat offering expert coaching for Primary, Secondary, and Higher Secondary students (Science & Commerce).</p>
+        <div class="cta-group reveal delay-4">
+          <button class="btn-phenom" onclick="openAuthModal(true)">ADMISSION OPEN <span>→</span></button>
+          <button class="btn-phenom btn-secondary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">ENQUIRE NOW <span>↓</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ABOUT & ACHIEVEMENTS COUNTERS -->
+    <section class="section" id="about">
+      <div class="reveal">
+        <div class="section-tag">ABOUT OUR INSTITUTE</div>
+        <h2 class="section-title">Shape & Shine Coaching Class</h2>
+        <p class="section-sub">Located at 213, Shivnagar Society, Udhana, Surat, we focus on conceptual clarity, rigorous test series, and personal mentoring for students from Standard 1st to 12th.</p>
+      </div>
+
+      <!-- COUNTERS -->
+      <div class="stats-counter-grid">
+        <div class="stat-box reveal-scale delay-1">
+          <div class="stat-number"><span class="counter" data-target="98">0</span>%</div>
+          <div class="stat-label">Board Exam Pass Rate</div>
+        </div>
+        <div class="stat-box reveal-scale delay-2">
+          <div class="stat-number"><span class="counter" data-target="500">0</span>+</div>
+          <div class="stat-label">Students Guided</div>
+        </div>
+        <div class="stat-box reveal-scale delay-3">
+          <div class="stat-number"><span class="counter" data-target="15">0</span>+</div>
+          <div class="stat-label">Years of Academic Trust</div>
+        </div>
+        <div class="stat-box reveal-scale delay-4">
+          <div class="stat-number"><span class="counter" data-target="100">0</span>%</div>
+          <div class="stat-label">Personal Mentoring</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. COURSES SECTION -->
+    <section class="section" id="courses" style="background: rgba(255,255,255,0.01);">
+      <div class="reveal">
+        <div class="section-tag">ACADEMIC PROGRAMS</div>
+        <h2 class="section-title">Standard 1st to 12th (Science & Commerce)</h2>
+      </div>
+      <div class="grid-cards">
+        <div class="card reveal delay-1">
+          <h3 style="color:var(--accent-orange); font-size:1.25rem; font-weight:800;">Primary & Middle (Std 1 - 8)</h3>
+          <p style="color:var(--text-muted); font-size:0.92rem; margin-top:0.6rem; line-height:1.5;">Core foundational clarity in Maths, Science, and English with daily homework checking and tests.</p>
+        </div>
+        <div class="card reveal delay-2">
+          <h3 style="color:var(--accent-orange); font-size:1.25rem; font-weight:800;">Secondary (Std 9 & 10 Board)</h3>
+          <p style="color:var(--text-muted); font-size:0.92rem; margin-top:0.6rem; line-height:1.5;">Targeted board exam preparations, unit test series, past 10 years question bank revisions.</p>
+        </div>
+        <div class="card reveal delay-3">
+          <h3 style="color:var(--accent-orange); font-size:1.25rem; font-weight:800;">Higher Secondary (Std 11 & 12)</h3>
+          <p style="color:var(--text-muted); font-size:0.92rem; margin-top:0.6rem; line-height:1.5;">Dedicated Science (Physics, Chemistry, Maths, Bio) & Commerce (Accounts, Stats, Eco, OC) coaching.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. EXPERT TEACHERS SECTION -->
+    <section class="section" id="teachers">
+      <div class="reveal">
+        <div class="section-tag">EXPERT FACULTY</div>
+        <h2 class="section-title">Meet Our Experienced Mentors</h2>
+        <p class="section-sub">Dedicated subject specialists with 10+ years of board teaching experience committed to conceptual clarity.</p>
+      </div>
+      <div class="grid-cards" id="public-teachers-grid"></div>
+    </section>
+
+    <!-- 5. INSTITUTE PHOTO GALLERY SHOWCASE -->
+    <section class="section" id="gallery" style="background: rgba(255,255,255,0.01);">
+      <div class="reveal">
+        <div class="section-tag">CAMPUS & EVENTS</div>
+        <h2 class="section-title">Institute Photo Gallery</h2>
+        <p class="section-sub">Glimpses of our classroom sessions, topper felicitation awards, and science guidance seminars.</p>
+      </div>
+      <div class="gallery-grid" id="public-gallery-grid"></div>
+    </section>
+
+    <!-- 6. NOTICE BOARD -->
+    <section class="section" id="notices">
+      <div class="reveal">
+        <div class="section-tag">ANNOUNCEMENTS</div>
+        <h2 class="section-title">Notice Board</h2>
+      </div>
+      <div class="grid-cards" id="public-notices-grid"></div>
+    </section>
+
+    <!-- 7. ADMISSION ENQUIRY -->
+    <section class="section" id="contact" style="background: rgba(255,255,255,0.01);">
+      <div class="reveal" style="max-width: 620px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 2.8rem; backdrop-filter: blur(16px);">
+        <div class="section-tag">GET IN TOUCH</div>
+        <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 1.5rem;">Admission Enquiry Form</h2>
+        <form id="inquiry-form" onsubmit="event.preventDefault(); submitInquiry();">
+          <div class="form-group"><label class="form-label">Parent's Name</label><input type="text" id="inq-parent" class="input-field" placeholder="Mr. Rajeshbhai" required /></div>
+          <div class="form-group"><label class="form-label">Student's Name</label><input type="text" id="inq-student" class="input-field" placeholder="Aarav" required /></div>
+          <div class="form-group">
+            <label class="form-label">Select Standard & Stream</label>
+            <select id="inq-std" class="input-field">
+              <option value="1st Standard">1st Standard</option>
+              <option value="2nd Standard">2nd Standard</option>
+              <option value="3rd Standard">3rd Standard</option>
+              <option value="4th Standard">4th Standard</option>
+              <option value="5th Standard">5th Standard</option>
+              <option value="6th Standard">6th Standard</option>
+              <option value="7th Standard">7th Standard</option>
+              <option value="8th Standard">8th Standard</option>
+              <option value="9th Standard">9th Standard</option>
+              <option value="10th Standard (Board)" selected>10th Standard (Board)</option>
+              <option value="11th Science">11th Science</option>
+              <option value="11th Commerce">11th Commerce</option>
+              <option value="12th Science (Board)">12th Science (Board)</option>
+              <option value="12th Commerce (Board)">12th Commerce (Board)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone (10 Digits)</label>
+            <input type="tel" id="inq-phone" class="input-field" placeholder="9824528709" required />
+          </div>
+          <div class="form-group"><label class="form-label">Message / Query (Optional)</label><textarea id="inq-msg" class="input-field" rows="3" placeholder="Interested in batch timings or fee details..."></textarea></div>
+          <button type="submit" id="btn-inq-submit" class="btn-phenom" style="width:100%; justify-content:center;">SUBMIT ENQUIRY →</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOOTER WITH DYNAMIC SOCIAL MEDIA LINKS -->
+    <footer>
+      <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:2.5rem; font-size:0.85rem; color:var(--text-muted); max-width:1300px; margin:0 auto;">
+        <div>
+          <div style="font-weight:800; color:#fff; font-size:1.05rem; margin-bottom:0.6rem; display:flex; align-items:center; gap:8px;">
+            <span style="color:var(--accent-orange)">✳</span> SHAPE & SHINE COACHING CLASS
+          </div>
+          <p style="margin-bottom:4px;">213, Shivnagar Society, Harinagar-2, Kashi Nagar, Udhana, Surat, Gujarat 394210</p>
+          <p style="margin-bottom:4px;">Phone: 098245 28709 | Excellence in 1st to 12th Board Coaching</p>
+
+          <div class="social-icons-wrap">
+            <a href="https://instagram.com/shapeandshine" target="_blank" id="footer-insta-link" class="social-btn social-insta" title="Follow on Instagram">📸</a>
+            <a href="https://facebook.com/shapeandshine" target="_blank" id="footer-fb-link" class="social-btn social-fb" title="Like on Facebook">📘</a>
+            <a href="https://wa.me/919824528709" target="_blank" id="footer-wa-link" class="social-btn social-wa" title="Chat on WhatsApp">💬</a>
+            <a href="https://youtube.com/@shapeandshine" target="_blank" id="footer-yt-link" class="social-btn social-yt" title="Watch on YouTube">▶️</a>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="margin-bottom:6px;">© 2026 SHAPE & SHINE COACHING CLASS. ALL RIGHTS RESERVED.</div>
+          <div style="font-size:0.75rem;">Udhana, Surat Premier Tuition Center</div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- AUTH / REGISTRATION POPUP -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.8rem;">
+        <h3 style="font-size: 1.4rem; font-weight:800;" id="modal-title">Student Sign In</h3>
+        <button onclick="closeAuthModal()" style="background:none; border:none; color:#888; font-size:1.6rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Access your dashboard, live notices, and personal messaging.</p>
+      
+      <div class="form-group" id="group-name" style="display: none;">
+        <label class="form-label">FULL NAME</label>
+        <input type="text" id="auth-name" class="input-field" placeholder="Aarav Sharma" />
+      </div>
+
+      <div class="form-group" id="group-phone" style="display: none;">
+        <label class="form-label">CONTACT PHONE</label>
+        <input type="tel" id="auth-phone" class="input-field" placeholder="9824528709" />
+        <div class="input-hint">10 digits mobile number</div>
+      </div>
+
+      <div class="form-group" id="group-standard" style="display: none;">
+        <label class="form-label">SELECT STANDARD & STREAM</label>
+        <select id="auth-standard" class="input-field">
+          <option value="1st Standard">1st Standard</option>
+          <option value="2nd Standard">2nd Standard</option>
+          <option value="3rd Standard">3rd Standard</option>
+          <option value="4th Standard">4th Standard</option>
+          <option value="5th Standard">5th Standard</option>
+          <option value="6th Standard">6th Standard</option>
+          <option value="7th Standard">7th Standard</option>
+          <option value="8th Standard">8th Standard</option>
+          <option value="9th Standard">9th Standard</option>
+          <option value="10th Standard (Board)" selected>10th Standard (Board)</option>
+          <option value="11th Science">11th Science</option>
+          <option value="11th Commerce">11th Commerce</option>
+          <option value="12th Science (Board)">12th Science (Board)</option>
+          <option value="12th Commerce (Board)">12th Commerce (Board)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="group-plan" style="display: none;">
+        <label class="form-label">CHOOSE PAYMENT PLAN</label>
+        <select id="auth-plan" class="input-field">
+          <option value="One-Time" selected>One-Time Full Course Payment</option>
+          <option value="Monthly">Monthly Installments (Pay Per Month)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">EMAIL ADDRESS</label>
+        <input type="email" id="auth-email" class="input-field" placeholder="student@gmail.com" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">PASSWORD (LETTERS + NUMBERS, 6-20 CHARS)</label>
+        <input type="password" id="auth-pass" class="input-field" placeholder="••••••••" maxlength="20" />
+        <div class="input-hint">At least 6 characters with letters & numbers (e.g. Pass123)</div>
+      </div>
+
+      <!-- FORGOT PASSWORD LINK -->
+      <div id="forgot-link-wrap" style="text-align: right; margin-top: -0.5rem; margin-bottom: 0.8rem;">
+        <a href="javascript:void(0)" onclick="openForgotModal()" style="color: var(--accent-orange); font-size: 0.78rem; font-weight: 700; text-decoration: none;">Forgot Password?</a>
+      </div>
+
+      <button class="btn-phenom" style="width: 100%; justify-content: center; margin-top: 0.4rem;" onclick="submitAuth()">PROCEED →</button>
+      
+      <div style="margin-top: 1.3rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+        <span id="auth-toggle-msg">New student?</span> <a href="javascript:void(0)" style="color: var(--accent-orange); text-decoration: none; font-weight: 700;" onclick="toggleAuthMode()">Register here</a>
+      </div>
+      <button style="background: none; border: none; color: #777; width: 100%; margin-top: 1rem; cursor: pointer; font-size:0.85rem;" onclick="closeAuthModal()">Close Window</button>
+    </div>
+  </div>
+
+  <!-- 8. FORGOT / RESET PASSWORD POPUP -->
+  <div class="modal-overlay" id="forgot-modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.8rem;">
+        <h3 style="font-size: 1.4rem; font-weight:800;">Reset Password</h3>
+        <button onclick="closeForgotModal()" style="background:none; border:none; color:#888; font-size:1.6rem; cursor:pointer;">×</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">
+        Enter your registered email address and set your new password.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">REGISTERED EMAIL ADDRESS</label>
+        <input type="email" id="forgot-email" class="input-field" placeholder="student@gmail.com" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">NEW PASSWORD</label>
+        <input type="password" id="forgot-new-pass" class="input-field" placeholder="New Password (e.g. Pass123)" maxlength="20" required />
+        <div class="input-hint">At least 6 characters with letters and numbers</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">CONFIRM NEW PASSWORD</label>
+        <input type="password" id="forgot-confirm-pass" class="input-field" placeholder="Re-enter New Password" maxlength="20" required />
+      </div>
+
+      <button class="btn-phenom" id="btn-submit-reset" style="width: 100%; justify-content: center; margin-top: 0.8rem;" onclick="submitResetPassword()">
+        RESET PASSWORD →
+      </button>
+
+      <div style="margin-top: 1.2rem; text-align: center; font-size: 0.85rem;">
+        <a href="javascript:void(0)" style="color: var(--accent-orange); text-decoration: none; font-weight: 700;" onclick="closeForgotModal(); openAuthModal(false);">← Back to Sign In</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX MODAL FOR GALLERY IMAGES -->
+  <div class="lightbox-modal" id="lightbox-modal" onclick="closeLightbox()">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+      <div class="lightbox-img-box">
+        <img id="lightbox-img" src="" alt="Gallery Image" />
+      </div>
+      <div class="lightbox-info">
+        <span class="gallery-date-badge" id="lightbox-date">-</span>
+        <h3 id="lightbox-title" style="font-size:1.3rem; margin-bottom:0.4rem;">-</h3>
+        <p id="lightbox-desc" style="color:var(--text-muted); font-size:0.9rem; line-height:1.5;">-</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✓' : '✖'}</span> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 20);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
+    }
+
+    function cleanIndianPhone(raw) {
+      if(!raw) return '';
+      const digits = String(raw).replace(/\D/g, '');
+      return digits.length >= 10 ? digits.slice(-10) : digits;
+    }
+
+    // THREE.JS PARTICLES
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('particle-canvas').appendChild(renderer.domElement);
+
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(150 * 3);
+    for (let i = 0; i < 450; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 20;
+      positions[i+1] = (Math.random() - 0.5) * 20;
+      positions[i+2] = (Math.random() - 0.5) * 20;
+    }
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
+    camera.position.z = 8;
+
+    function animate() { requestAnimationFrame(animate); scene.rotation.y += 0.001; renderer.render(scene, camera); }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // SCROLL REVEAL OBSERVER
+    function initScrollReveal() {
+      const observerOptions = { root: null, rootMargin: '0px 0px -40px 0px', threshold: 0.12 };
+
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            const counters = entry.target.querySelectorAll('.counter');
+            if (counters.length > 0) {
+              counters.forEach(counter => runCounter(counter));
+            }
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+        revealObserver.observe(el);
+      });
+    }
+
+    function runCounter(counterEl) {
+      const target = +counterEl.getAttribute('data-target');
+      const duration = 1200;
+      const startTime = performance.now();
+
+      function updateNumber(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const currentCount = Math.floor(easeOut * target);
+
+        counterEl.innerText = currentCount;
+
+        if (progress < 1) {
+          requestAnimationFrame(updateNumber);
+        } else {
+          counterEl.innerText = target;
+        }
+      }
+      requestAnimationFrame(updateNumber);
+    }
+
+    window.addEventListener('scroll', () => {
+      const nav = document.querySelector('nav');
+      if (window.scrollY > 40) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    }, { passive: true });
+
+    // LOAD EXPERT TEACHERS
+    async function loadPublicTeachers() {
+      const container = document.getElementById('public-teachers-grid');
+      try {
+        const res = await fetch('/api/teachers');
+        const teachers = await res.json();
+        
+        if (!teachers || teachers.length === 0) {
+          container.innerHTML = `<div class="card reveal" style="grid-column: 1 / -1; text-align:center;"><p style="color:var(--text-muted);">Faculty profiles will appear here shortly.</p></div>`;
+          initScrollReveal();
+          return;
+        }
+
+        container.innerHTML = teachers.map((t, idx) => `
+          <div class="teacher-card reveal delay-${(idx % 3) + 1}">
+            <div class="teacher-photo-wrap">
+              <img src="${t.photo_data}" alt="${t.name}" class="teacher-photo" loading="lazy" />
+            </div>
+            <div class="teacher-body">
+              <h3 class="teacher-name">${t.name}</h3>
+              <div class="teacher-sub">${t.subject}</div>
+              <div class="teacher-badges-row">
+                <span class="t-badge">${t.experience}</span>
+                ${t.qualification ? `<span class="t-badge" style="color:var(--success);">${t.qualification}</span>` : ''}
+              </div>
+              <p class="teacher-desc">${t.description || 'Dedicated mentor at Shape & Shine Coaching.'}</p>
+            </div>
+          </div>
+        `).join('');
+
+        initScrollReveal();
+      } catch(e) {
+        console.error('Teachers load error:', e);
+      }
+    }
+
+    // LOAD GALLERY & LIGHTBOX
+    let cachedGalleryItems = [];
+
+    async function loadPublicGallery() {
+      const container = document.getElementById('public-gallery-grid');
+      try {
+        const res = await fetch('/api/gallery');
+        const items = await res.json();
+        cachedGalleryItems = items || [];
+
+        if (cachedGalleryItems.length === 0) {
+          container.innerHTML = `<div class="card reveal" style="grid-column: 1 / -1; text-align:center;"><p style="color:var(--text-muted);">Institute gallery images will appear here shortly.</p></div>`;
+          initScrollReveal();
+          return;
+        }
+
+        container.innerHTML = cachedGalleryItems.map((item, idx) => `
+          <div class="gallery-card reveal delay-${(idx % 3) + 1}" onclick="openLightbox(${item.id})">
+            <div class="gallery-thumb-wrap">
+              <img src="${item.image_data}" alt="${item.title}" class="gallery-img" loading="lazy" />
+            </div>
+            <div class="gallery-body">
+              <span class="gallery-date-badge">${item.date}</span>
+              <h3 class="gallery-title">${item.title}</h3>
+              <p class="gallery-desc">${item.description || 'Shape & Shine Coaching Institute event.'}</p>
+            </div>
+          </div>
+        `).join('');
+
+        initScrollReveal();
+      } catch(e) {
+        console.error('Gallery fetch error:', e);
+      }
+    }
+
+    function openLightbox(id) {
+      const item = cachedGalleryItems.find(g => g.id === id);
+      if(!item) return;
+
+      document.getElementById('lightbox-img').src = item.image_data;
+      document.getElementById('lightbox-date').innerText = item.date;
+      document.getElementById('lightbox-title').innerText = item.title;
+      document.getElementById('lightbox-desc').innerText = item.description || '';
+      document.getElementById('lightbox-modal').style.display = 'flex';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox-modal').style.display = 'none';
+    }
+
+    // LOAD SOCIAL SETTINGS
+    async function loadSiteSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const settings = await res.json();
+        if (settings.instagram_link) document.getElementById('footer-insta-link').href = settings.instagram_link;
+        if (settings.facebook_link) document.getElementById('footer-fb-link').href = settings.facebook_link;
+        if (settings.whatsapp_number) document.getElementById('footer-wa-link').href = `https://wa.me/91${settings.whatsapp_number}`;
+        if (settings.youtube_link) document.getElementById('footer-yt-link').href = settings.youtube_link;
+      } catch(e){}
+    }
+
+    // VISITOR PING
+    async function pingVisitor() {
+      try {
+        const res = await fetch('/api/ping');
+        const data = await res.json();
+        document.getElementById('live-count').innerText = data.activeOnline;
+      } catch(e){}
+    }
+    setInterval(pingVisitor, 8000);
+    pingVisitor();
+
+    // NOTICES
+    async function loadPublicNotices() {
+      try {
+        const res = await fetch('/api/events');
+        const events = await res.json();
+        const container = document.getElementById('public-notices-grid');
+        if(!events || events.length === 0) {
+          container.innerHTML = '<div class="card reveal"><p style="color:var(--text-muted);">No notices posted yet.</p></div>';
+          initScrollReveal();
+          return;
+        }
+        container.innerHTML = events.map((e, idx) => `
+          <div class="card reveal delay-${(idx % 3) + 1}">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="font-weight:700; color:var(--accent-orange);">${e.title}</span>
+              <span style="font-size:0.75rem; color:var(--text-muted);">${e.date}</span>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.9rem; line-height:1.5;">${e.description || 'No description provided.'}</p>
+          </div>
+        `).join('');
+
+        initScrollReveal();
+      } catch(e){}
+    }
+
+    // ADMISSION INQUIRY
+    async function submitInquiry() {
+      const parent_name = document.getElementById('inq-parent').value.trim();
+      const student_name = document.getElementById('inq-student').value.trim();
+      const standard = document.getElementById('inq-std').value;
+      const rawPhone = document.getElementById('inq-phone').value;
+      const phone = cleanIndianPhone(rawPhone);
+      const message = document.getElementById('inq-msg').value.trim();
+
+      if(!parent_name || !student_name || !phone) {
+        showToast('Please fill all mandatory fields', 'error');
+        return;
+      }
+      if(phone.length !== 10) {
+        showToast('Please enter a valid 10-digit mobile number', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/inquiries', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ parent_name, student_name, standard, phone, message })
+        });
+        const data = await res.json();
+        if(res.ok) {
+          showToast(data.message || 'Enquiry submitted successfully!');
+          document.getElementById('inquiry-form').reset();
+        } else {
+          showToast(data.error || 'Failed to submit inquiry', 'error');
+        }
+      } catch(e) {
+        showToast('Server connection error', 'error');
+      }
+    }
+
+    // AUTH POPUP HANDLERS
+    let isRegister = false;
+    function openAuthModal(register = false) {
+      isRegister = register;
+      document.getElementById('modal-title').innerText = isRegister ? 'Student Registration' : 'Student Sign In';
+      document.getElementById('group-name').style.display = isRegister ? 'block' : 'none';
+      document.getElementById('group-phone').style.display = isRegister ? 'block' : 'none';
+      document.getElementById('group-standard').style.display = isRegister ? 'block' : 'none';
+      document.getElementById('group-plan').style.display = isRegister ? 'block' : 'none';
+      document.getElementById('auth-toggle-msg').innerText = isRegister ? 'Already registered?' : 'New student?';
+      
+      const forgotLink = document.getElementById('forgot-link-wrap');
+      if (forgotLink) forgotLink.style.display = isRegister ? 'none' : 'block';
+
+      document.getElementById('auth-modal').style.display = 'flex';
+    }
+
+    function closeAuthModal() { document.getElementById('auth-modal').style.display = 'none'; }
+    function toggleAuthMode() { openAuthModal(!isRegister); }
+
+    async function submitAuth() {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-pass').value;
+      const name = document.getElementById('auth-name').value.trim();
+      const rawPhone = document.getElementById('auth-phone').value;
+      const phone = cleanIndianPhone(rawPhone);
+      const standard = document.getElementById('auth-standard').value;
+      const payment_plan = document.getElementById('auth-plan').value;
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,20}$/;
+
+      if (isRegister) {
+        if (!name || name.length < 2) {
+          showToast('Please enter your full name', 'error');
+          return;
+        }
+        if (!phone || phone.length !== 10) {
+          showToast('Mobile number must be exactly 10 digits', 'error');
+          return;
+        }
+      }
+
+      if (!email || !emailRegex.test(email)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+      }
+
+      if (isRegister && (!password || !passRegex.test(password))) {
+        showToast('Password must be 6-20 characters long with letters and numbers (e.g. Pass123)', 'error');
+        return;
+      }
+
+      if (!password) {
+        showToast('Please enter your password', 'error');
+        return;
+      }
+
+      const endpoint = isRegister ? '/api/register' : '/api/login';
+      const body = isRegister ? { name, email, password, standard, phone, payment_plan } : { email, password };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if(res.ok) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showToast(data.message || 'Login successful!');
+          closeAuthModal();
+          if(data.user.role === 'admin') location.href = 'admin.html';
+          else location.href = 'student.html';
+        } else {
+          showToast(data.error || 'Authentication error', 'error');
+        }
+      } catch(e) {
+        showToast('Network error, please try again.', 'error');
+      }
+    }
+
+    document.getElementById('auth-pass').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitAuth();
+    });
+
+    // ========================================================
+    // FORGOT / RESET PASSWORD POPUP HANDLERS
+    // ========================================================
+    function openForgotModal() {
+      closeAuthModal();
+      document.getElementById('forgot-email').value = document.getElementById('auth-email').value || '';
+      document.getElementById('forgot-new-pass').value = '';
+      document.getElementById('forgot-confirm-pass').value = '';
+      document.getElementById('forgot-modal').style.display = 'flex';
+    }
+
+    function closeForgotModal() {
+      document.getElementById('forgot-modal').style.display = 'none';
+    }
+
+    async function submitResetPassword() {
+      const email = document.getElementById('forgot-email').value.trim();
+      const newPassword = document.getElementById('forgot-new-pass').value;
+      const confirmPassword = document.getElementById('forgot-confirm-pass').value;
+
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,20}$/;
+
+      if (!email || !emailRegex.test(email)) {
+        showToast('Please enter a valid registered email address', 'error');
+        return;
+      }
+      if (!newPassword || !passRegex.test(newPassword)) {
+        showToast('Password must be 6-20 characters long with letters and numbers (e.g. Pass123)', 'error');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showToast('New password and Confirm password do not match', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-reset');
+      btn.disabled = true;
+      btn.innerText = 'RESETTING PASSWORD...';
+
+      try {
+        const res = await fetch('/api/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, newPassword, confirmPassword })
+        });
+        const data = await res.json();
+
+        btn.disabled = false;
+        btn.innerText = 'RESET PASSWORD →';
+
+        if (res.ok) {
+          showToast(data.message || 'Password reset successfully!');
+          closeForgotModal();
+          // Auto open Sign In modal with pre-filled email
+          openAuthModal(false);
+          document.getElementById('auth-email').value = email;
+        } else {
+          showToast(data.error || 'Failed to reset password', 'error');
+        }
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerText = 'RESET PASSWORD →';
+        showToast('Network error, please try again.', 'error');
+      }
+    }
+
+    document.getElementById('forgot-confirm-pass')?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitResetPassword();
+    });
+
+    function checkSession() {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if(user) {
+        document.getElementById('auth-btn').innerText = 'LOGOUT';
+        document.getElementById('auth-btn').onclick = () => { localStorage.clear(); location.reload(); };
+        if(user.role === 'admin') document.getElementById('admin-link').style.display = 'inline-flex';
+        else document.getElementById('student-link').style.display = 'inline-flex';
+      }
+    }
+
+    // Initialize all components on load
+    checkSession();
+    loadPublicTeachers();
+    loadPublicGallery();
+    loadPublicNotices();
+    loadSiteSettings();
+    initScrollReveal();
+  </script>
+</body>
+</html>

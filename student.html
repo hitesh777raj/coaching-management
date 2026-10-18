@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Shape & Shine // Student Dashboard</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #08090b;
+      --bg-card: rgba(18, 20, 24, 0.85);
+      --accent-orange: #e8590c;
+      --accent-hover: #ff6b1a;
+      --text-white: #f5f6f8;
+      --text-muted: #848995;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-orange: rgba(232, 89, 12, 0.45);
+      --success: #2ed573;
+      --danger: #ff4757;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+    body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; }
+    #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+
+    nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100; padding: 1.2rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+      backdrop-filter: blur(20px); background: rgba(8, 9, 11, 0.82); border-bottom: 1px solid var(--border-subtle);
+      transition: all 0.3s ease;
+    }
+    .brand { font-size: 1.1rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+    .brand-dot { width: 9px; height: 9px; background: var(--accent-orange); border-radius: 50%; box-shadow: 0 0 12px var(--accent-orange); }
+
+    .btn-pill {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: #fff;
+      padding: 0.65rem 1.3rem; border-radius: 30px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-pill:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(232, 89, 12, 0.35); }
+
+    .container { position: relative; z-index: 10; max-width: 1280px; margin: 0 auto; padding: 7.5rem 1.5rem 4rem 1.5rem; flex: 1; width: 100%; }
+    
+    /* ENTRANCE ANIMATIONS */
+    @keyframes studentSlideUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes studentScaleUp {
+      from { opacity: 0; transform: scale(0.92) translateY(18px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.7; }
+    }
+
+    .welcome-banner {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px;
+      padding: 2.2rem; backdrop-filter: blur(16px); margin-bottom: 2rem; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      animation: studentSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .welcome-title { font-size: clamp(1.6rem, 3.2vw, 2.3rem); font-weight: 800; margin-bottom: 0.3rem; }
+    .welcome-sub { color: var(--text-muted); font-size: 0.9rem; }
+
+    .grid-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.8rem; }
+    
+    .dash-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px;
+      padding: 1.8rem; backdrop-filter: blur(16px); margin-bottom: 1.8rem;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+      animation: studentScaleUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .dash-card:hover { border-color: var(--border-orange); transform: translateY(-4px); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+
+    .stagger-1 { animation-delay: 0.08s; }
+    .stagger-2 { animation-delay: 0.16s; }
+    .stagger-3 { animation-delay: 0.24s; }
+    .stagger-4 { animation-delay: 0.32s; }
+    .stagger-5 { animation-delay: 0.40s; }
+    .stagger-6 { animation-delay: 0.48s; }
+
+    .dash-card-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 1.3rem; display: flex; align-items: center; justify-content: space-between; color: var(--accent-orange); }
+
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; }
+    .info-label { color: var(--text-muted); font-weight: 600; }
+    .info-val { font-weight: 700; }
+
+    .item-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 1.1rem; margin-bottom: 0.9rem; transition: all 0.25s ease; }
+    .item-box:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); transform: translateY(-2px); }
+
+    /* Attendance Stat Blocks */
+    .att-stat-box { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 1.2rem; text-align: center; }
+    .att-stat-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 0.85rem 0.5rem; transition: transform 0.25s ease; }
+    .att-stat-item:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.15); }
+    .att-stat-val { font-size: 1.4rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; }
+    .att-stat-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-top: 3px; }
+
+    /* INTERACTIVE CALENDAR STYLES */
+    .cal-container {
+      background: rgba(0, 0, 0, 0.28); border: 1px solid var(--border-subtle);
+      border-radius: 18px; padding: 1.2rem; margin-top: 1rem;
+    }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.9rem; }
+    .cal-nav-btn {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff;
+      padding: 5px 14px; border-radius: 8px; font-weight: 800; cursor: pointer; font-size: 0.85rem;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .cal-nav-btn:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: scale(1.05); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+    .cal-day-head { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; padding-bottom: 4px; }
+    .cal-cell {
+      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 10px; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); position: relative;
+    }
+    .cal-cell:hover { transform: scale(1.1); z-index: 2; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .cal-present {
+      background: rgba(46, 213, 115, 0.18) !important; border: 1px solid var(--success) !important; color: var(--success) !important;
+    }
+    .cal-absent {
+      background: rgba(255, 71, 87, 0.18) !important; border: 1px solid var(--danger) !important; color: var(--danger) !important;
+    }
+    .cal-today { border: 1px dashed var(--accent-orange) !important; }
+    .cal-empty { background: transparent !important; border: none !important; cursor: default !important; }
+    
+    .cal-legend { display: flex; justify-content: center; gap: 14px; margin-top: 0.9rem; font-size: 0.75rem; color: var(--text-muted); }
+
+    /* Chat Messages Box */
+    .chat-box {
+      height: 260px; overflow-y: auto; background: rgba(0,0,0,0.22); border: 1px solid var(--border-subtle);
+      border-radius: 14px; padding: 1rem; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.8rem;
+    }
+    .msg-bubble {
+      padding: 0.75rem 1rem; border-radius: 14px; font-size: 0.88rem; max-width: 82%; line-height: 1.45;
+      animation: studentSlideUp 0.3s ease;
+    }
+    .msg-student { background: rgba(232, 89, 12, 0.2); border: 1px solid rgba(232, 89, 12, 0.45); align-self: flex-end; color: #fff; }
+    .msg-admin { background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); align-self: flex-start; color: #fff; }
+
+    .unread-pill-dot {
+      background: var(--accent-orange); color: #fff; font-size: 0.7rem; font-weight: 800;
+      padding: 3px 9px; border-radius: 12px; animation: pulseGlow 1.6s infinite;
+    }
+
+    .btn-action-mat {
+      background: rgba(232, 89, 12, 0.15); border: 1px solid rgba(232, 89, 12, 0.35); color: var(--accent-orange);
+      padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none; cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); display: inline-flex; align-items: center; gap: 4px;
+    }
+    .btn-action-mat:hover { background: var(--accent-orange); color: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(232, 89, 12, 0.35); }
+
+    /* SINGLE PROMINENT RECEIPT BUTTON */
+    .btn-receipt-download {
+      background: rgba(232, 89, 12, 0.15); border: 1px solid var(--accent-orange); color: #fff;
+      padding: 0.85rem 1.2rem; border-radius: 14px; font-size: 0.88rem; font-weight: 800; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%; justify-content: center; margin-top: 1rem;
+    }
+    .btn-receipt-download:hover { background: var(--accent-orange); box-shadow: 0 10px 25px rgba(232, 89, 12, 0.4); transform: translateY(-2px); }
+
+    /* ACADEMIC PROGRESSION BUTTON */
+    .btn-promote-student {
+      background: rgba(155, 89, 182, 0.15); border: 1px solid rgba(155, 89, 182, 0.4); color: #d4a5ea;
+      padding: 0.85rem 1.2rem; border-radius: 14px; font-size: 0.88rem; font-weight: 800; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      width: 100%; justify-content: center; margin-top: 0.8rem;
+    }
+    .btn-promote-student:hover { background: #9b59b6; color: #fff; box-shadow: 0 10px 25px rgba(155, 89, 182, 0.4); transform: translateY(-2px); }
+
+    .input-group { margin-bottom: 1.1rem; text-align: left; }
+    .input-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
+    input, select {
+      width: 100%; background: #181b22; border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 0.85rem 1rem; color: #fff; font-size: 0.9rem; outline: none; transition: border 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--accent-orange); }
+
+    .btn-create {
+      background: var(--accent-orange); color: #fff; width: 100%; padding: 0.95rem; border-radius: 12px;
+      border: none; font-weight: 700; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 1.2px; cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); margin-top: 0.8rem;
+    }
+    .btn-create:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(232, 89, 12, 0.4); }
+
+    /* MODAL */
+    @keyframes modalScaleIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(25px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 1.5rem;
+    }
+    .modal-box {
+      background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 22px; padding: 2rem;
+      width: 100%; max-width: 480px; max-height: 86vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative;
+    }
+
+    footer {
+      border-top: 1px solid var(--border-subtle); padding: 3rem 2rem 2rem 2rem; background: #060708; margin-top: auto;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .dash-card, .welcome-banner { animation: none !important; }
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printable-receipt-container, #printable-receipt-container * { visibility: visible; }
+      #printable-receipt-container { position: absolute; left: 0; top: 0; width: 100%; color: #000 !important; background: #fff !important; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .container { padding: 6.5rem 1rem 3rem 1rem; }
+      .grid-dashboard { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="particle-canvas"></div>
+  <div id="toast-container"></div>
+  <div id="printable-receipt-container" style="display:none; padding:2rem; font-family:'Plus Jakarta Sans', sans-serif;"></div>
+
+  <nav>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      SHAPE & SHINE // STUDENT PORTAL
+    </div>
+    <div style="display:flex; gap:10px;">
+      <a href="index.html" class="btn-pill">← HOME</a>
+      <button class="btn-pill" onclick="localStorage.clear(); location.href='index.html';">LOGOUT</button>
+    </div>
+  </nav>
+
+  <div class="container">
+    
+    <!-- WELCOME BANNER (NO DUPLICATE BUTTON) -->
+    <div class="welcome-banner">
+      <div>
+        <h1 class="welcome-title" id="student-greeting">Welcome, Student</h1>
+        <p class="welcome-sub">Shape & Shine Coaching Class, Udhana, Surat • Student Academic Dashboard</p>
+      </div>
+    </div>
+
+    <div class="grid-dashboard">
+      
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- 1. PROFILE & FEES CARD (SINGLE CLEAN RECEIPT BUTTON + PROMOTION BUTTON) -->
+        <div class="dash-card stagger-1">
+          <div class="dash-card-title">
+            <span>✳ My Profile & Fees</span>
+          </div>
+          <div class="info-row"><span class="info-label">Student Name</span><span class="info-val" id="profile-name">-</span></div>
+          <div class="info-row"><span class="info-label">Email Address</span><span class="info-val" id="profile-email">-</span></div>
+          <div class="info-row"><span class="info-label">Current Standard</span><span class="info-val" id="profile-std" style="color:var(--accent-orange);">-</span></div>
+          <div class="info-row"><span class="info-label">Academic Session</span><span class="info-val" id="profile-session" style="color:#fff;">2026-2027</span></div>
+          <div class="info-row"><span class="info-label">Payment Plan</span><span class="info-val" id="profile-plan" style="color:#2ed573;">-</span></div>
+          <div class="info-row"><span class="info-label">Total Course Fee</span><span class="info-val" id="profile-total">-</span></div>
+          <div class="info-row"><span class="info-label">Paid Amount</span><span class="info-val" id="profile-paid" style="color:var(--success);">-</span></div>
+          <div class="info-row" style="border:none;"><span class="info-label">Fee Status</span><span class="info-val" id="profile-fee" style="color:var(--danger);">-</span></div>
+          
+          <!-- SINGLE OFFICIAL FEE RECEIPT BUTTON -->
+          <div id="receipt-box-wrapper" style="display:none;">
+            <button class="btn-receipt-download" onclick="printStudentReceipt()">
+              🧾 Print Official Fee Receipt (PDF) 🖨️
+            </button>
+          </div>
+
+          <!-- STUDENT ACADEMIC PROGRESSION BUTTON (NEW FEATURE) -->
+          <button class="btn-promote-student" onclick="openStudentPromoteModal()">
+            🎓 Switch to Next Standard (New Session)
+          </button>
+        </div>
+
+        <!-- 2. INTERACTIVE ATTENDANCE (HAZIRI) CALENDAR -->
+        <div class="dash-card stagger-2">
+          <div class="dash-card-title">
+            <span>📅 My Attendance (Haziri)</span>
+            <span class="badge" id="att-badge-percent" style="background:rgba(46,213,115,0.15); color:var(--success);">100% Present</span>
+          </div>
+          
+          <div class="att-stat-box">
+            <div class="att-stat-item">
+              <div class="att-stat-val" id="att-total-days" style="color:#fff;">0</div>
+              <div class="att-stat-lbl">Lectures</div>
+            </div>
+            <div class="att-stat-item">
+              <div class="att-stat-val" id="att-present-days" style="color:var(--success);">0</div>
+              <div class="att-stat-lbl">Present</div>
+            </div>
+            <div class="att-stat-item">
+              <div class="att-stat-val" id="att-absent-days" style="color:var(--danger);">0</div>
+              <div class="att-stat-lbl">Absent</div>
+            </div>
+          </div>
+
+          <!-- INTERACTIVE CALENDAR WITH MONTH NAVIGATION -->
+          <div class="cal-container">
+            <div class="cal-header">
+              <button class="cal-nav-btn" onclick="navAttendanceCalendar(-1)">‹</button>
+              <strong id="cal-month-title" style="font-size:0.92rem; color:#fff;">Month 2026</strong>
+              <button class="cal-nav-btn" onclick="navAttendanceCalendar(1)">›</button>
+            </div>
+            
+            <div class="cal-grid" id="cal-grid-body"></div>
+
+            <div class="cal-legend">
+              <span><span style="color:var(--success); font-weight:800;">●</span> Present</span>
+              <span><span style="color:var(--danger); font-weight:800;">●</span> Absent</span>
+              <span><span style="color:#555;">●</span> Off/Holiday</span>
+            </div>
+
+            <div id="cal-day-detail" style="text-align:center; font-size:0.8rem; color:var(--text-muted); margin-top:0.8rem; min-height:18px;">
+              Click on any date to view haziri detail
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. CLASS BATCH TIMINGS -->
+        <div class="dash-card stagger-3">
+          <div class="dash-card-title">
+            <span>🕒 My Class Batch Timings</span>
+          </div>
+          <div class="item-box" style="margin-bottom:0.8rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="color:#fff; font-size:0.92rem;">☀️ Morning Batch</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Regular Morning Lecture</div>
+              </div>
+              <div style="color:var(--accent-orange); font-weight:800; font-size:0.95rem;" id="timing-morning">07:00 AM - 09:30 AM</div>
+            </div>
+          </div>
+          <div class="item-box" style="margin-bottom:0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <strong style="color:#fff; font-size:0.92rem;">🌙 Evening Batch</strong>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Regular Evening Lecture</div>
+              </div>
+              <div style="color:#2ed573; font-weight:800; font-size:0.95rem;" id="timing-evening">04:00 PM - 07:00 PM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- 4. TEST MARKS & EXAM RESULTS -->
+        <div class="dash-card stagger-4">
+          <div class="dash-card-title">
+            <span>🏆 Exam Results & Test Marks</span>
+          </div>
+          <div id="marks-container"><p style="color:var(--text-muted); font-size:0.88rem;">No test scores uploaded yet.</p></div>
+        </div>
+
+        <!-- 5. 1-ON-1 MESSAGES WITH ADMIN -->
+        <div class="dash-card stagger-5" id="chat-dash-card">
+          <div class="dash-card-title">
+            <span>💬 Direct Messages with Admin</span>
+            <span id="student-unread-badge" class="unread-pill-dot" style="display:none;">● * NEW MESSAGE</span>
+          </div>
+          <div class="chat-box" id="chat-messages" onclick="markStudentMessagesRead()">
+            <p style="color:var(--text-muted); font-size:0.85rem; text-align:center; margin:auto;">No messages yet. Send a message to admin below.</p>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="chat-input" placeholder="Type your message to admin..." onfocus="markStudentMessagesRead()" style="flex:1; background:#181b22; border:1px solid var(--border-subtle); border-radius:10px; padding:0.8rem; color:#fff; font-size:0.9rem; outline:none;" />
+            <button onclick="sendMessage()" style="background:var(--accent-orange); border:none; color:#fff; padding:0 1.2rem; border-radius:10px; font-weight:700; cursor:pointer;">Send</button>
+          </div>
+        </div>
+
+        <!-- 6. STUDY MATERIALS (PDF VIEW, DOWNLOAD & LINK) -->
+        <div class="dash-card stagger-6">
+          <div class="dash-card-title">
+            <span>📥 Class Study Materials</span>
+          </div>
+          <div id="materials-container"><p style="color:var(--text-muted); font-size:0.88rem;">No study materials uploaded for your class yet.</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ACADEMIC PROGRESSION (SWITCH NEXT CLASS) MODAL -->
+  <div class="modal-overlay" id="student-promote-modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:800; color:#be84dc;">🎓 Academic Progression</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Switch to your next academic class</p>
+        </div>
+        <button onclick="closeStudentPromoteModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Current Enrolled Standard</label>
+        <input type="text" id="stu-curr-std" disabled style="opacity:0.8; color:var(--accent-orange); font-weight:800;" />
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Choose Next Standard</label>
+        <select id="stu-next-std"></select>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">New Academic Session Year</label>
+        <input type="text" id="stu-session-year" value="2027-2028" required />
+      </div>
+
+      <div style="font-size:0.75rem; color:var(--text-muted); background:rgba(255,255,255,0.02); padding:10px; border-radius:10px; border:1px solid var(--border-subtle); margin-bottom:1rem; line-height:1.4;">
+        ℹ️ Your previous academic year marks and fee history will be safely preserved in the backup archive. Your dashboard will reset for the new academic syllabus!
+      </div>
+
+      <button class="btn-create" style="background:#9b59b6;" onclick="submitStudentProgression()">CONFIRM SWITCH TO NEXT STANDARD →</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeStudentPromoteModal()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div style="max-width:1280px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2rem; font-size:0.85rem; color:var(--text-muted);">
+      <div>
+        <div style="font-weight:800; color:#fff; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px;">
+          <span style="color:var(--accent-orange)">✳</span> SHAPE & SHINE COACHING CLASS
+        </div>
+        <p>213, Shivnagar Society, Harinagar-2, Kashi Nagar, Udhana, Surat, Gujarat 394210</p>
+        <p>Helpline: 098245 28709 | Student Portal Active</p>
+      </div>
+      <div style="text-align:right;">
+        <div>© 2026 SHAPE & SHINE COACHING. ALL RIGHTS RESERVED.</div>
+        <div style="font-size:0.75rem; margin-top:4px;">Academic data is safely secured with regular backup snapshots.</div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!token || !user || user.role === 'admin') location.href = 'index.html';
+
+    const ALL_STANDARDS = [
+      "1st Standard", "2nd Standard", "3rd Standard", "4th Standard", "5th Standard",
+      "6th Standard", "7th Standard", "8th Standard", "9th Standard", "10th Standard (Board)",
+      "11th Science", "11th Commerce", "12th Science (Board)", "12th Commerce (Board)"
+    ];
+
+    let cachedReceipt = null;
+    let attendanceMap = {};
+    let calCurrentDate = new Date();
+
+    function renderLocalProfile() {
+      if (user) {
+        document.getElementById('student-greeting').innerText = `Welcome, ${user.name || 'Student'}!`;
+        document.getElementById('profile-name').innerText = user.name || '-';
+        document.getElementById('profile-email').innerText = user.email || '-';
+        document.getElementById('profile-std').innerText = user.standard || '-';
+        document.getElementById('profile-session').innerText = user.academic_year || '2026-2027';
+        document.getElementById('profile-plan').innerText = user.payment_plan === 'Monthly' ? `Monthly (₹${(user.monthly_fee || 1500).toLocaleString()}/mo)` : 'One-Time Course Fee';
+        document.getElementById('profile-total').innerText = `₹${(user.total_fees || 15000).toLocaleString()}`;
+        document.getElementById('profile-paid').innerText = `₹${(user.paid_amount || 0).toLocaleString()}`;
+        
+        const feeStatus = user.fee_status || 'Pending';
+        const feeElem = document.getElementById('profile-fee');
+        feeElem.innerText = feeStatus;
+        feeElem.style.color = feeStatus === 'Paid' ? 'var(--success)' : 'var(--danger)';
+      }
+    }
+    renderLocalProfile();
+
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✓' : '✖'}</span> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 20);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
+    }
+
+    // THREE.JS PARTICLES
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('particle-canvas').appendChild(renderer.domElement);
+
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(150 * 3);
+    for (let i = 0; i < 450; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 20;
+      positions[i+1] = (Math.random() - 0.5) * 20;
+      positions[i+2] = (Math.random() - 0.5) * 20;
+    }
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
+    camera.position.z = 8;
+
+    function animate() { requestAnimationFrame(animate); scene.rotation.y += 0.001; renderer.render(scene, camera); }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    let prevMessageCount = 0;
+
+    async function loadStudentData() {
+      try {
+        const res = await fetch('/api/student/data', { headers: { 'Authorization': `Bearer ${token}` } });
+        if(res.status === 401 || res.status === 403) {
+          localStorage.clear();
+          location.href = 'index.html';
+          return;
+        }
+        const data = await res.json();
+        
+        // 1. Profile Info
+        const p = data.profile || user;
+        if (p) {
+          document.getElementById('student-greeting').innerText = `Welcome, ${p.name}!`;
+          document.getElementById('profile-name').innerText = p.name;
+          document.getElementById('profile-email').innerText = p.email;
+          document.getElementById('profile-std').innerText = p.standard;
+          document.getElementById('profile-session').innerText = p.academic_year || '2026-2027';
+          document.getElementById('profile-plan').innerText = p.payment_plan === 'Monthly' ? `Monthly (₹${(p.monthly_fee || 1500).toLocaleString()}/mo)` : 'One-Time Course Fee';
+          document.getElementById('profile-total').innerText = `₹${(p.total_fees || 15000).toLocaleString()}`;
+          document.getElementById('profile-paid').innerText = `₹${(p.paid_amount || 0).toLocaleString()}`;
+          
+          const feeElem = document.getElementById('profile-fee');
+          feeElem.innerText = p.fee_status || 'Pending';
+          feeElem.style.color = p.fee_status === 'Paid' ? 'var(--success)' : 'var(--danger)';
+
+          localStorage.setItem('user', JSON.stringify({ ...user, ...p }));
+        }
+
+        // 2. Batch Timings
+        if (data.timings) {
+          document.getElementById('timing-morning').innerText = data.timings.morning_batch || '07:00 AM - 09:30 AM';
+          document.getElementById('timing-evening').innerText = data.timings.evening_batch || '04:00 PM - 07:00 PM';
+        }
+
+        // 3. Attendance Stats & Map
+        if (data.attendance) {
+          const att = data.attendance;
+          document.getElementById('att-total-days').innerText = att.total_days;
+          document.getElementById('att-present-days').innerText = att.present_days;
+          document.getElementById('att-absent-days').innerText = att.absent_days;
+
+          const badge = document.getElementById('att-badge-percent');
+          badge.innerText = `${att.percentage}% Present`;
+          badge.style.color = att.percentage >= 75 ? 'var(--success)' : 'var(--danger)';
+
+          attendanceMap = {};
+          (att.history || []).forEach(h => {
+            attendanceMap[h.date] = h.status;
+          });
+
+          renderAttendanceCalendar();
+        }
+
+        // 4. Single Official Fee Receipt Button
+        if (data.receipt) {
+          cachedReceipt = data.receipt;
+          document.getElementById('receipt-box-wrapper').style.display = 'block';
+        }
+
+        // 5. Unread Message Badge
+        const unreadBadge = document.getElementById('student-unread-badge');
+        if (Number(data.unread_count) > 0) {
+          unreadBadge.style.display = 'inline-flex';
+          unreadBadge.innerText = `● * ${data.unread_count} NEW MESSAGE`;
+        } else {
+          unreadBadge.style.display = 'none';
+        }
+
+        // 6. Test Marks
+        if(data.marks && data.marks.length > 0) {
+          document.getElementById('marks-container').innerHTML = data.marks.map(m => `
+            <div class="item-box">
+              <div style="font-weight:700; font-size:0.92rem;">${m.test_name} - ${m.subject}</div>
+              <div style="color:var(--accent-orange); font-size:1.1rem; font-weight:700; margin-top:0.3rem;">Score: ${m.score} / ${m.total_marks}</div>
+            </div>
+          `).join('');
+        } else {
+          document.getElementById('marks-container').innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem;">No test scores uploaded yet.</p>`;
+        }
+
+        // 7. Study Materials
+        if(data.materials && data.materials.length > 0) {
+          document.getElementById('materials-container').innerHTML = data.materials.map(mat => {
+            let actionsHtml = '';
+            
+            if (mat.has_pdf || mat.file_data) {
+              actionsHtml += `
+                <button class="btn-action-mat" onclick="viewPdfMaterial(${mat.id})">👁️ View PDF</button>
+                <button class="btn-action-mat" onclick="downloadPdfMaterial(${mat.id})">📥 Download PDF</button>
+              `;
+            }
+            if (mat.file_link) {
+              actionsHtml += `
+                <a href="${mat.file_link}" target="_blank" class="btn-action-mat">🔗 Open Link ↗</a>
+              `;
+            }
+
+            return `
+              <div class="info-row">
+                <div>
+                  <strong style="color:#fff;">${mat.title}</strong>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Subject: <span style="color:var(--accent-orange); font-weight:700;">${mat.subject}</span></div>
+                </div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                  ${actionsHtml}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          document.getElementById('materials-container').innerHTML = `<p style="color:var(--text-muted); font-size:0.88rem;">No study materials uploaded for your class yet.</p>`;
+        }
+
+        // 8. Messages
+        if(data.messages) {
+          const chatBox = document.getElementById('chat-messages');
+          if(data.messages.length !== prevMessageCount) {
+            chatBox.innerHTML = data.messages.map(msg => `
+              <div class="msg-bubble ${msg.sender === 'student' ? 'msg-student' : 'msg-admin'}">
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:2px; font-weight:700;">
+                  ${msg.sender === 'student' ? 'You' : 'Admin'}
+                </div>
+                <div>${msg.message}</div>
+              </div>
+            `).join('');
+            chatBox.scrollTop = chatBox.scrollHeight;
+            prevMessageCount = data.messages.length;
+          }
+        }
+      } catch(e){}
+    }
+
+    // INTERACTIVE CALENDAR ENGINE
+    const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const DAY_HEADS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+    function navAttendanceCalendar(dir) {
+      calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+      renderAttendanceCalendar();
+    }
+
+    function renderAttendanceCalendar() {
+      const year = calCurrentDate.getFullYear();
+      const month = calCurrentDate.getMonth();
+
+      document.getElementById('cal-month-title').innerText = `${MONTH_NAMES[month]} ${year}`;
+
+      const firstDayIdx = new Date(year, month, 1).getDay();
+      const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      const gridBody = document.getElementById('cal-grid-body');
+      let html = '';
+
+      DAY_HEADS.forEach(d => {
+        html += `<div class="cal-day-head">${d}</div>`;
+      });
+
+      for (let i = 0; i < firstDayIdx; i++) {
+        html += `<div class="cal-cell cal-empty"></div>`;
+      }
+
+      for (let day = 1; day <= totalDaysInMonth; day++) {
+        const monthPad = String(month + 1).padStart(2, '0');
+        const dayPad = String(day).padStart(2, '0');
+        const dateKey = `${year}-${monthPad}-${dayPad}`;
+
+        const status = attendanceMap[dateKey];
+        let statusClass = '';
+        if (status === 'Present') statusClass = 'cal-present';
+        else if (status === 'Absent') statusClass = 'cal-absent';
+
+        const isToday = dateKey === todayStr ? 'cal-today' : '';
+
+        html += `
+          <div class="cal-cell ${statusClass} ${isToday}" onclick="showDayAttendanceDetail('${dateKey}', '${status || 'No Lecture / Off'}')">
+            <span>${day}</span>
+          </div>
+        `;
+      }
+
+      gridBody.innerHTML = html;
+    }
+
+    function showDayAttendanceDetail(dateKey, status) {
+      const detailBox = document.getElementById('cal-day-detail');
+      let color = 'var(--text-muted)';
+      if (status === 'Present') color = 'var(--success)';
+      else if (status === 'Absent') color = 'var(--danger)';
+
+      detailBox.innerHTML = `
+        📅 <strong>${dateKey}</strong>: <span style="color:${color}; font-weight:800;">${status.toUpperCase()}</span>
+      `;
+    }
+
+    // PRINT OFFICIAL FEE RECEIPT
+    function printStudentReceipt() {
+      if (!cachedReceipt) {
+        showToast('No payment receipt available yet.', 'error');
+        return;
+      }
+      const rec = cachedReceipt;
+      const container = document.getElementById('printable-receipt-container');
+      container.innerHTML = `
+        <div style="max-width:700px; margin:auto; border:2px solid #000; padding:2.5rem; font-family:'Plus Jakarta Sans', sans-serif;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:1rem; margin-bottom:1.5rem;">
+            <div>
+              <h1 style="font-size:1.8rem; margin:0; color:#e8590c; font-weight:900;">SHAPE & SHINE COACHING CLASS</h1>
+              <p style="margin:4px 0; font-size:0.85rem;">213, Shivnagar Society, Harinagar-2, Udhana, Surat, Gujarat 394210</p>
+              <p style="margin:2px 0; font-size:0.85rem;">Phone: 098245 28709 | Reg No: SS-2026-ED</p>
+            </div>
+            <div style="text-align:right;">
+              <h2 style="font-size:1.2rem; margin:0; text-transform:uppercase;">OFFICIAL FEE RECEIPT</h2>
+              <p style="font-weight:700; margin:4px 0; font-size:1rem; color:#e8590c;">${rec.receipt_no}</p>
+              <p style="margin:2px 0; font-size:0.8rem;">Date: ${rec.date}</p>
+            </div>
+          </div>
+
+          <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+            <tr><td style="padding:8px 0; border-bottom:1px solid #ddd;"><strong>Student Name:</strong> ${rec.student_name}</td><td style="padding:8px 0; border-bottom:1px solid #ddd;"><strong>Standard:</strong> ${rec.standard}</td></tr>
+            <tr><td style="padding:8px 0; border-bottom:1px solid #ddd;"><strong>Payment Category:</strong> ${rec.payment_type || 'Tuition Fee'} ${rec.payment_for_month ? '(' + rec.payment_for_month + ')' : ''}</td><td style="padding:8px 0; border-bottom:1px solid #ddd;"><strong>Payment Mode:</strong> ${rec.payment_mode}</td></tr>
+          </table>
+
+          <table style="width:100%; border-collapse:collapse; margin-bottom:2rem; border:1px solid #000;">
+            <thead><tr style="background:#f2f2f2;"><th style="padding:10px; border:1px solid #000; text-align:left;">Description</th><th style="padding:10px; border:1px solid #000; text-align:right;">Amount (INR)</th></tr></thead>
+            <tbody>
+              <tr><td style="padding:10px; border:1px solid #000;">Course Tuition Fee Total</td><td style="padding:10px; border:1px solid #000; text-align:right;">₹${Number(rec.total_fees).toLocaleString()}</td></tr>
+              <tr><td style="padding:10px; border:1px solid #000;"><strong>Amount Paid (This Receipt)</strong></td><td style="padding:10px; border:1px solid #000; text-align:right; font-weight:700; font-size:1.1rem; color:#e8590c;">₹${Number(rec.amount_paid).toLocaleString()}</td></tr>
+              <tr style="background:#fafafa;"><td style="padding:10px; border:1px solid #000;">Remaining Balance Due</td><td style="padding:10px; border:1px solid #000; text-align:right; font-weight:700; color:#ff4757;">₹${Number(rec.balance_amount).toLocaleString()}</td></tr>
+            </tbody>
+          </table>
+
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:3rem;">
+            <div style="font-size:0.75rem; color:#666; max-width:320px;">
+              * Computer generated receipt. Fee once paid is non-refundable. Shape & Shine Coaching Class.
+            </div>
+            <div style="text-align:center;">
+              <div style="border-bottom:1px solid #000; width:180px; margin-bottom:5px;"></div>
+              <p style="font-size:0.8rem; font-weight:700; margin:0;">Authorised Signatory</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      container.style.display = 'block';
+      window.print();
+      setTimeout(() => { container.style.display = 'none'; }, 1000);
+    }
+
+    // STUDENT PROMOTION (SWITCH NEXT STANDARD)
+    function openStudentPromoteModal() {
+      const curr = document.getElementById('profile-std').innerText;
+      document.getElementById('stu-curr-std').value = curr;
+
+      const nextSelect = document.getElementById('stu-next-std');
+      nextSelect.innerHTML = ALL_STANDARDS.map(s => `<option value="${s}">${s}</option>`).join('');
+
+      const currIdx = ALL_STANDARDS.indexOf(curr);
+      if (currIdx !== -1 && currIdx < ALL_STANDARDS.length - 1) {
+        nextSelect.value = ALL_STANDARDS[currIdx + 1];
+      }
+
+      document.getElementById('student-promote-modal').style.display = 'flex';
+    }
+
+    function closeStudentPromoteModal() {
+      document.getElementById('student-promote-modal').style.display = 'none';
+    }
+
+    async function submitStudentProgression() {
+      const nextStd = document.getElementById('stu-next-std').value;
+      const sessionYear = document.getElementById('stu-session-year').value.trim();
+
+      if(!nextStd) {
+        showToast('Please select next standard', 'error');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/student/promote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ to_standard: nextStd, academic_year: sessionYear })
+        });
+        const data = await res.json();
+        if(res.ok) {
+          showToast(data.message || 'Promoted successfully to next class!');
+          closeStudentPromoteModal();
+          loadStudentData();
+        } else {
+          showToast(data.error || 'Promotion error', 'error');
+        }
+      } catch(e) {
+        showToast('Network error, please try again.', 'error');
+      }
+    }
+
+    // PDF VIEW & DOWNLOAD
+    async function viewPdfMaterial(materialId) {
+      try {
+        const res = await fetch(`/api/materials/file/${materialId}`);
+        const data = await res.json();
+        if(data.file_data) {
+          const win = window.open();
+          win.document.write(`<iframe src="${data.file_data}" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>`);
+        } else {
+          showToast('PDF file not available', 'error');
+        }
+      } catch(e) {
+        showToast('Error opening PDF', 'error');
+      }
+    }
+
+    async function downloadPdfMaterial(materialId) {
+      try {
+        const res = await fetch(`/api/materials/file/${materialId}`);
+        const data = await res.json();
+        if(data.file_data) {
+          const a = document.createElement('a');
+          a.href = data.file_data;
+          a.download = data.file_name || 'ShapeAndShine_Notes.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          showToast('PDF file not available', 'error');
+        }
+      } catch(e) {
+        showToast('Download error', 'error');
+      }
+    }
+
+    async function markStudentMessagesRead() {
+      document.getElementById('student-unread-badge').style.display = 'none';
+      await fetch('/api/student/messages/read', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
+
+    loadStudentData();
+    setInterval(loadStudentData, 4000);
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if(!text) return;
+
+      const res = await fetch('/api/student/message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ message: text })
+      });
+      if(res.ok) {
+        input.value = '';
+        showToast('Message sent to Admin!');
+        prevMessageCount = -1;
+        loadStudentData();
+      }
+    }
+
+    document.getElementById('chat-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') sendMessage();
+    });
+  </script>
+</body>
+</html>
