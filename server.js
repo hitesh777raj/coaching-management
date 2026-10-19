@@ -482,7 +482,7 @@ app.post('/api/reset-password', async (req, res) => {
   }
 });
 
-// Admission Inquiry
+// Admission Inquiry//
 app.post('/api/inquiries', async (req, res) => {
   try {
     const { parent_name, student_name, standard, phone, message } = req.body;
