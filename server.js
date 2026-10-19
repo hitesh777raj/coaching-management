@@ -446,17 +446,7 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-app.get('/api/teachers', async (req, res) => {
-  res.json([]);
-});
 
-app.get('/api/gallery', async (req, res) => {
-  res.json([]);
-});
-
-app.get('/api/settings', async (req, res) => {
-  res.json({});
-});
 
 // Reset Password (Forgot Password)
 app.post('/api/reset-password', async (req, res) => {
@@ -1327,10 +1317,17 @@ app.delete('/api/admin/inquiries/:id', authenticateToken, requireAdmin, async (r
   }
 });
 
+app.get('/admin.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/student.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'student.html'));
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
-
 // Local Development Server (Only runs if not on Vercel serverless)
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
