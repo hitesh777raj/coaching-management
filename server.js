@@ -446,6 +446,18 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
+app.get('/api/teachers', async (req, res) => {
+  res.json([]);
+});
+
+app.get('/api/gallery', async (req, res) => {
+  res.json([]);
+});
+
+app.get('/api/settings', async (req, res) => {
+  res.json({});
+});
+
 // Reset Password (Forgot Password)
 app.post('/api/reset-password', async (req, res) => {
   try {
