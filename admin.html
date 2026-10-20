@@ -2044,8 +2044,19 @@
 
     function promptDeleteTeacher(id) {
       openConfirmModal('Delete Faculty Profile', 'Are you sure you want to remove this faculty profile from the website?', async () => {
-        await fetch(`/api/admin/teachers/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Faculty profile removed successfully.');
+        try {
+          const res = await fetch(`/api/admin/teachers/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          if (res.ok) {
+            showToast('Faculty profile removed successfully.');
+          } else {
+            let msg = '';
+            try { msg = (await res.json()).error || ''; } catch (e) {}
+            showToast(`Delete failed (${res.status}) ${msg}`.trim(), 'error');
+          }
+        } catch (e) {
+          showToast('Server error, delete nahi hua. Dobara try karo.', 'error');
+        }
+        lastPayload = '';
         fetchAdminData();
       });
     }
