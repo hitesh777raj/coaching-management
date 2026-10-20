@@ -2,18 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08090b" />
+  <meta name="color-scheme" content="dark" />
   <title>Shape & Shine // Admin Console</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
   <style>
     :root {
       --bg-dark: #08090b;
-      --bg-card: rgba(18, 20, 24, 0.92);
+      --bg-card: rgba(18, 20, 24, 0.85);
       --accent-orange: #e8590c;
       --accent-hover: #ff6b1a;
       --text-white: #f5f6f8;
@@ -22,234 +24,349 @@
       --success: #2ed573;
       --danger: #ff4757;
       --whatsapp: #25d366;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-    html, body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; overflow-x: hidden; width: 100%; }
-    body { display: flex; flex-direction: column; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+    html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
 
-    /* TOASTS */
-    #toast-container {
-      position: fixed; top: calc(1rem + var(--safe-top)); right: 1rem; z-index: 9999;
-      display: flex; flex-direction: column; gap: 0.6rem; pointer-events: none; max-width: 90vw;
-    }
-    .toast {
-      background: rgba(18, 20, 24, 0.98); border: 1px solid var(--border-subtle); color: #fff;
-      padding: 0.85rem 1.3rem; border-radius: 12px; font-size: 0.88rem; font-weight: 600;
-      pointer-events: auto; transform: translateY(-20px); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.6); display: flex; align-items: center; gap: 8px;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
+    #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 5000; display: flex; flex-direction: column; gap: 0.8rem; pointer-events: none; }
+    .toast { background: rgba(18, 20, 24, 0.98); border: 1px solid var(--border-subtle); color: #fff; padding: 1rem 1.6rem; border-radius: 14px; font-size: 0.9rem; font-weight: 600; pointer-events: auto; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+    .toast.show { transform: translateX(0); }
     .toast.success { border-left: 4px solid var(--accent-orange); }
     .toast.error { border-left: 4px solid var(--danger); }
 
-    /* HEADER: FAST & ADAPTIVE */
+    /* HEADER */
     header {
-      padding: calc(0.6rem + var(--safe-top)) 1.2rem 0.6rem 1.2rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-      background: rgba(10, 11, 14, 0.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle);
-      position: sticky; top: 0; z-index: 100; gap: 0.6rem;
+      padding: 0.85rem 1.8rem; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(10, 11, 14, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-subtle);
+      position: sticky; top: 0; z-index: 100; gap: 0.8rem;
     }
-    .brand { font-weight: 800; font-size: 0.98rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+    .brand { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
 
-    .header-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-    .btn-top {
-      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: var(--text-white);
-      padding: 0.45rem 0.85rem; border-radius: 30px; font-size: 0.74rem; font-weight: 700; cursor: pointer; text-decoration: none;
-      transition: background 0.12s; white-space: nowrap; touch-action: manipulation;
-    }
-    .btn-top:hover, .btn-top:active { background: var(--accent-orange); border-color: var(--accent-orange); }
-
-    /* TAB NAVIGATION */
     .admin-nav-tabs {
-      display: flex; gap: 0.35rem; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 30px;
+      display: flex; gap: 0.25rem; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 30px;
       border: 1px solid var(--border-subtle); overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-      -webkit-overflow-scrolling: touch; width: 100%; order: 3;
+      flex-shrink: 1; min-width: 0;
     }
     .admin-nav-tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
-      background: transparent; border: none; color: var(--text-muted); padding: 0.42rem 0.85rem;
-      border-radius: 20px; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: background 0.12s, color 0.12s;
-      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; touch-action: manipulation;
+      background: transparent; border: none; color: var(--text-muted); padding: 0.4rem 0.85rem;
+      border-radius: 20px; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
     }
-    .tab-btn.active { background: var(--accent-orange); color: #fff; box-shadow: 0 4px 12px rgba(232, 89, 12, 0.35); }
+    .tab-btn.active { background: var(--accent-orange); color: #fff; box-shadow: 0 4px 15px rgba(232, 89, 12, 0.35); }
 
     .nav-badge-dot {
-      background: var(--danger); color: #fff; font-size: 0.62rem; padding: 2px 6px;
-      border-radius: 10px; font-weight: 800;
+      background: var(--danger); color: #fff; font-size: 0.65rem; padding: 2px 7px;
+      border-radius: 10px; font-weight: 800; animation: pulseRed 1.8s infinite;
     }
+    @keyframes pulseRed { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.15); } }
 
-    /* CONTAINER & GRIDS */
-    .admin-container { max-width: 1440px; margin: 1.2rem auto; padding: 0 1rem; flex: 1; width: 100%; }
+    .btn-top {
+      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: var(--text-white);
+      padding: 0.45rem 0.9rem; border-radius: 30px; font-size: 0.76rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center; line-height: 1.2; gap: 5px;
+    }
+    .btn-top:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-1px); }
+
+    .admin-container { max-width: 1440px; margin: 2rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
     
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-    .kpi-card {
-      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 1.1rem;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+    @keyframes adminFadeIn {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    .kpi-label { color: var(--text-muted); font-size: 0.68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.3rem; }
-    .kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 1.9rem; font-weight: 700; color: #fff; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+    .kpi-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.4rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .kpi-card:hover { border-color: var(--accent-orange); transform: translateY(-3px); }
+    .kpi-label { color: var(--text-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; color: #fff; }
 
-    .tab-content { display: none; }
+    .tab-content { display: none; animation: adminFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .tab-content.active { display: block; }
 
-    .panel-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.4rem; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); margin-bottom: 1.5rem; }
-    .panel-title { font-size: 1.08rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
-    .panel-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+    .panel-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 2rem; margin-bottom: 2rem; }
+    .panel-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; }
+    .panel-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 12px; }
 
-    .input-group { margin-bottom: 0.95rem; }
-    .input-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.8px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem; display: block; }
+    .input-group { margin-bottom: 1.1rem; }
+    .input-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
     input, select, textarea {
       width: 100%; background: #181b22; border: 1px solid var(--border-subtle);
-      border-radius: 12px; padding: 0.75rem 0.9rem; color: #fff; font-size: 0.9rem; outline: none; transition: border-color 0.15s;
+      border-radius: 12px; padding: 0.8rem 1rem; color: #fff; font-size: 0.9rem; outline: none; transition: border 0.25s;
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent-orange); }
-    select option { background: #181b22; color: #fff; }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent-orange); box-shadow: 0 0 12px rgba(232, 89, 12, 0.25); }
+    select option { background: #181b22; color: #fff; padding: 10px; }
 
     .btn-create {
-      background: var(--accent-orange); color: #fff; width: 100%; padding: 0.88rem; border-radius: 12px;
-      border: none; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
-      touch-action: manipulation; transition: background 0.15s, transform 0.08s;
+      background: var(--accent-orange); color: #fff; width: 100%; padding: 0.95rem; border-radius: 12px;
+      border: none; font-weight: 700; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 1.2px; cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); margin-top: 0.6rem;
     }
-    .btn-create:active { transform: scale(0.98); background: var(--accent-hover); }
-    .btn-create:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-create:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(232, 89, 12, 0.4); }
+    .btn-create:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
 
-    /* DATA TABLE */
-    .data-table-wrap {
-      overflow-x: auto; margin-top: 0.6rem; border-radius: 12px; border: 1px solid var(--border-subtle);
-      -webkit-overflow-scrolling: touch;
-    }
-    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
+    /* TABLE */
+    .data-table-wrap { overflow-x: auto; margin-top: 0.8rem; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
     th {
-      font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
-      padding: 0.8rem 0.75rem; border-bottom: 1px solid var(--border-subtle); letter-spacing: 0.5px; background: rgba(255,255,255,0.015);
+      font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
+      padding: 1rem 0.9rem; border-bottom: 1px solid var(--border-subtle); letter-spacing: 0.5px;
     }
-    td { padding: 0.85rem 0.75rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; vertical-align: middle; }
+    td { padding: 1.1rem 0.9rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; vertical-align: middle; }
 
-    .badge { padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; display: inline-block; }
+    .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-block; }
     .badge-paid { background: rgba(46,213,115,0.15); color: var(--success); }
     .badge-pending { background: rgba(255,71,87,0.15); color: var(--danger); }
-    .badge-plan { background: rgba(232, 89, 12, 0.15); color: var(--accent-orange); font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; font-weight: 700; display: inline-block; }
+    .badge-plan { background: rgba(232, 89, 12, 0.15); color: var(--accent-orange); font-size: 0.72rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; display: inline-block; }
 
-    .actions-flex-container { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+    .actions-flex-container { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
+
     .btn-action {
       background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff;
-      padding: 6px 10px; border-radius: 8px; font-size: 0.74rem; font-weight: 700; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; touch-action: manipulation; min-height: 32px;
+      padding: 6px 11px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
     }
-    .btn-action:hover, .btn-action:active { background: var(--accent-orange); border-color: var(--accent-orange); }
+    .btn-action:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-1px); }
     .btn-wa { background: rgba(37,211,102,0.15); border-color: rgba(37,211,102,0.4); color: var(--whatsapp); }
+    .btn-wa:hover { background: var(--whatsapp); color: #fff; border-color: var(--whatsapp); }
     .btn-receipt { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.22); color: #fff; }
+    .btn-receipt:hover { background: #fff; color: #000; }
     .btn-promote { background: rgba(155, 89, 182, 0.18); border-color: rgba(155, 89, 182, 0.4); color: #be84dc; }
+    .btn-promote:hover { background: #9b59b6; color: #fff; border-color: #9b59b6; }
     .btn-edit { background: rgba(46,213,115,0.15); border-color: rgba(46,213,115,0.3); color: var(--success); }
+    .btn-edit:hover { background: var(--success); color: #000; }
     .btn-delete { background: rgba(255,71,87,0.15); border-color: rgba(255,71,87,0.3); color: var(--danger); }
+    .btn-delete:hover { background: var(--danger); color: #fff; }
 
     .std-filter-container {
-      display: flex; gap: 0.45rem; overflow-x: auto; white-space: nowrap;
-      padding: 0.2rem 0.1rem 0.7rem 0.1rem; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);
-      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+      display: flex; gap: 0.5rem; overflow-x: auto; white-space: nowrap;
+      padding: 0.4rem 0.2rem 0.8rem 0.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: none; -ms-overflow-style: none;
     }
     .std-filter-container::-webkit-scrollbar { display: none; }
+
     .std-chip {
       background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle); color: var(--text-muted);
-      padding: 0.4rem 0.85rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; touch-action: manipulation;
+      padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; flex-shrink: 0;
     }
-    .std-chip.active { background: var(--accent-orange); border-color: var(--accent-orange); color: #fff; }
-    .std-count-badge { background: rgba(0,0,0,0.3); padding: 1px 6px; border-radius: 12px; font-size: 0.68rem; }
+    .std-chip:hover { border-color: var(--accent-orange); color: #fff; }
+    .std-chip.active { background: var(--accent-orange); border-color: var(--accent-orange); color: #fff; box-shadow: 0 4px 12px rgba(232, 89, 12, 0.3); }
+    .std-count-badge { background: rgba(0,0,0,0.3); padding: 1px 7px; border-radius: 12px; font-size: 0.7rem; }
+    .std-chip.active .std-count-badge { background: rgba(255,255,255,0.25); color: #fff; }
 
-    .period-filter-group { display: flex; gap: 4px; background: rgba(255,255,255,0.04); padding: 3px; border-radius: 20px; border: 1px solid var(--border-subtle); }
-    .period-btn { background: transparent; border: none; color: var(--text-muted); padding: 4px 10px; border-radius: 15px; font-size: 0.72rem; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+    .period-filter-group { display: flex; gap: 6px; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 20px; border: 1px solid var(--border-subtle); }
+    .period-btn { background: transparent; border: none; color: var(--text-muted); padding: 5px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
     .period-btn.active { background: var(--accent-orange); color: #fff; }
 
-    .grid-cards-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
-    .setting-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
+    .grid-cards-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.2rem; }
+    .setting-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center; }
 
-    .att-toggle-btn { padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 0.75rem; border: none; cursor: pointer; touch-action: manipulation; }
+    .att-toggle-btn { padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 0.78rem; border: none; cursor: pointer; transition: all 0.2s; }
     .att-present { background: rgba(46,213,115,0.2); color: var(--success); border: 1px solid var(--success); }
     .att-absent { background: rgba(255,71,87,0.2); color: var(--danger); border: 1px solid var(--danger); }
 
-    /* CHAT HUB */
-    .chat-hub-container {
-      display: grid; grid-template-columns: 320px 1fr; height: 580px; background: #101216;
-      border: 1px solid var(--border-subtle); border-radius: 18px; overflow: hidden;
-    }
-    .chat-user-list { border-right: 1px solid var(--border-subtle); overflow-y: auto; background: rgba(255,255,255,0.01); height: 100%; -webkit-overflow-scrolling: touch; }
-    .chat-user-header { padding: 0.85rem 1rem; font-size: 0.8rem; font-weight: 800; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); background: #14171d; }
-    .chat-user-card { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border-subtle); cursor: pointer; display: flex; flex-direction: column; gap: 3px; }
+    /* 1-ON-1 CHAT HUB */
+    .chat-hub-container { display: grid; grid-template-columns: 340px 1fr; height: 600px; background: #101216; border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; }
+    .chat-user-list { border-right: 1px solid var(--border-subtle); overflow-y: auto; background: rgba(255,255,255,0.01); height: 100%; }
+    .chat-user-header { padding: 1rem 1.2rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); background: #14171d; }
+    .chat-user-card { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; gap: 3px; position: relative; }
+    .chat-user-card:hover { background: rgba(255,255,255,0.04); }
     .chat-user-card.active { background: rgba(232, 89, 12, 0.15); border-left: 4px solid var(--accent-orange); }
-    .chat-user-card .u-name { font-weight: 700; font-size: 0.88rem; color: #fff; display: flex; justify-content: space-between; align-items: center; }
-    .chat-user-card .u-std { font-size: 0.72rem; color: var(--accent-orange); font-weight: 600; }
-    .chat-user-card .u-preview { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .unread-star-badge { background: var(--accent-orange); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; }
+    .chat-user-card .u-name { font-weight: 700; font-size: 0.92rem; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .chat-user-card .u-std { font-size: 0.75rem; color: var(--accent-orange); font-weight: 600; }
+    .chat-user-card .u-preview { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .unread-star-badge { background: var(--accent-orange); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 12px; }
 
     .chat-active-pane { display: flex; flex-direction: column; background: #0c0e12; height: 100%; overflow: hidden; position: relative; }
-    .chat-active-header { padding: 0.85rem 1.1rem; background: #14171d; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-    .chat-thread-box { flex: 1 1 auto; padding: 1.1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; -webkit-overflow-scrolling: touch; }
-    .chat-bubble { max-width: 82%; padding: 0.65rem 0.95rem; border-radius: 14px; font-size: 0.86rem; line-height: 1.4; }
+    .chat-active-header { padding: 1rem 1.5rem; background: #14171d; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .chat-thread-box { flex: 1 1 auto; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; }
+    .chat-bubble { max-width: 75%; padding: 0.75rem 1.1rem; border-radius: 14px; font-size: 0.9rem; line-height: 1.45; }
     .chat-bubble.student { background: #1b1f28; border: 1px solid var(--border-subtle); align-self: flex-start; color: #fff; }
     .chat-bubble.admin { background: rgba(232, 89, 12, 0.22); border: 1px solid rgba(232, 89, 12, 0.45); align-self: flex-end; color: #fff; }
-    .chat-bubble .b-time { font-size: 0.65rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
-    .chat-composer { padding: 0.85rem 1.1rem; background: #14171d; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-    .chat-composer input { flex: 1; padding: 0.75rem 0.9rem; }
-    .btn-send-chat { background: var(--accent-orange); color: #fff; border: none; padding: 0.75rem 1.3rem; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-
-    /* CHARTS CONTAINER */
-    .charts-responsive-grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 1.2rem; align-items: center; margin-bottom: 1.5rem; }
+    .chat-bubble .b-time { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
+    .chat-composer { padding: 1rem 1.5rem; background: #14171d; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; align-items: center; flex-shrink: 0; z-index: 10; }
+    .chat-composer input { flex: 1; padding: 0.85rem 1rem; }
+    .btn-send-chat { background: var(--accent-orange); color: #fff; border: none; padding: 0.85rem 1.6rem; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
     /* GALLERY & TEACHERS */
-    .admin-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-top: 1rem; }
-    .admin-photo-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; }
-    .admin-photo-thumb { width: 100%; height: 150px; object-fit: cover; background: #000; }
-    .admin-photo-info { padding: 0.9rem; }
+    .admin-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.4rem; margin-top: 1.2rem; }
+    .admin-photo-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; transition: transform 0.25s, border-color 0.25s; }
+    .admin-photo-card:hover { transform: translateY(-3px); border-color: var(--accent-orange); }
+    .admin-photo-thumb { width: 100%; height: 160px; object-fit: cover; background: #000; }
+    .admin-photo-info { padding: 1rem; }
 
-    /* MODALS: ADAPTIVE BOTTOM-SHEET ON MOBILE */
+    /* MODALS */
+    @keyframes modalScaleIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(25px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; justify-content: center; align-items: center; z-index: 5000; padding: 1rem;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 1.5rem;
+      overscroll-behavior: contain;
     }
     .modal-box {
-      background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; padding: 1.5rem;
-      width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.9);
-      position: relative; -webkit-overflow-scrolling: touch;
+      background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 22px; padding: 2rem;
+      width: 100%; max-width: 520px; max-height: 86vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative;
     }
 
-    footer { border-top: 1px solid var(--border-subtle); padding: 2rem 1.2rem calc(2rem + var(--safe-bottom)) 1.2rem; background: #060708; margin-top: auto; }
-
-    /* MOBILE RESPONSIVE (Under 768px) */
-    @media (max-width: 768px) {
-      header { padding: calc(0.5rem + var(--safe-top)) 0.85rem 0.5rem 0.85rem; }
-      .brand { font-size: 0.88rem; }
-      .header-actions { order: 2; }
-      .admin-nav-tabs { order: 3; margin-top: 0.2rem; }
-      .admin-container { padding: 0 0.75rem; margin: 1rem auto; }
-      .panel-card { padding: 1rem; border-radius: 16px; }
-      .charts-responsive-grid { grid-template-columns: 1fr; gap: 1rem; }
-      .chat-hub-container { grid-template-columns: 1fr; height: 600px; }
-      .chat-user-list { max-height: 200px; }
-      
-      /* Mobile Bottom-Sheet Form for Modals */
-      .modal-overlay { align-items: flex-end; padding: 0; }
-      .modal-box {
-        border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-top-left-radius: 24px; border-top-right-radius: 24px;
-        max-height: 85vh; padding: 1.3rem 1.1rem calc(1.5rem + var(--safe-bottom)) 1.1rem;
-      }
-
-      .period-filter-group { overflow-x: auto; max-width: 100%; }
-      table { min-width: 580px; }
-    }
+    footer { border-top: 1px solid var(--border-subtle); padding: 3rem 2rem 2rem 2rem; background: #060708; margin-top: auto; }
 
     /* STRICT SINGLE-PAGE PRINT STYLING */
     @media print {
-      @page { size: A4 portrait; margin: 8mm; }
-      body * { visibility: hidden !important; }
-      #printable-receipt-container, #printable-receipt-container * { visibility: visible !important; }
-      #printable-receipt-container {
-        position: fixed !important; left: 0 !important; top: 0 !important; width: 100% !important;
-        margin: 0 !important; padding: 1.2rem !important; background: #fff !important; color: #000 !important;
-        display: block !important; page-break-inside: avoid !important; box-sizing: border-box !important;
+      @page {
+        size: A4 portrait;
+        margin: 8mm;
       }
+      body * { visibility: hidden !important; }
+      #printable-receipt-container, #printable-receipt-container * {
+        visibility: visible !important;
+      }
+      #printable-receipt-container {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 1.2rem !important;
+        background: #fff !important;
+        color: #000 !important;
+        display: block !important;
+        page-break-inside: avoid !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+
+    /* ============================================================
+       PERFORMANCE + TOUCH RESPONSIVENESS
+       ============================================================ */
+    button, a, label, select, input, textarea, .tab-btn, .std-chip, .btn-action, .btn-top, .period-btn,
+    .chat-user-card, .att-toggle-btn, .btn-create, .btn-send-chat { touch-action: manipulation; }
+    button, .tab-btn, .std-chip, .btn-action, .btn-top, .period-btn, .chat-user-card { -webkit-user-select: none; user-select: none; }
+    body.modal-open { overflow: hidden; }
+    .admin-nav-tabs { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .std-filter-container, .data-table-wrap { -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+    .chat-thread-box, .chat-user-list, .modal-box { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+    .tab-btn:active, .btn-action:active, .btn-top:active, .std-chip:active, .period-btn:active,
+    .btn-create:active, .btn-send-chat:active, .att-toggle-btn:active { transform: scale(0.96); }
+
+    /* touch screens: no sticky hover-lift effects */
+    @media (hover: none) {
+      .kpi-card:hover, .btn-top:hover, .btn-action:hover, .btn-create:hover, .admin-photo-card:hover { transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+
+    /* tablets & below: stack the 2/3-column layouts */
+    @media (max-width: 900px) {
+      [style*="grid-template-columns: 1fr 1.4fr 1fr"],
+      [style*="grid-template-columns: 1fr 1.6fr"],
+      [style*="gap: 2rem"][style*="grid-template-columns"] { grid-template-columns: 1fr !important; gap: 1.2rem !important; }
+    }
+
+    @keyframes sheetUp {
+      from { transform: translateY(100%); opacity: 0.7; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ============================================================
+       MOBILE (Android / iPhone)
+       ============================================================ */
+    @media (max-width: 768px) {
+      /* header: brand + buttons on row 1, swipeable tabs on row 2 */
+      header {
+        flex-wrap: wrap; padding: calc(0.6rem + env(safe-area-inset-top)) 0.8rem 0.6rem; gap: 0.5rem;
+        background: rgba(10, 11, 14, 0.98); backdrop-filter: none; -webkit-backdrop-filter: none;
+      }
+      .brand { font-size: 0.86rem; order: 1; flex-shrink: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      header > div:last-child { order: 2; margin-left: auto; gap: 6px !important; }
+      .admin-nav-tabs { order: 3; flex: 1 0 100%; width: 100%; border-radius: 24px; }
+      .tab-btn { padding: 0.55rem 0.9rem; font-size: 0.78rem; min-height: 38px; }
+      .btn-top { padding: 0.5rem 0.75rem; font-size: 0.72rem; min-height: 36px; }
+
+      .admin-container { margin: 1rem auto; padding: 0 0.8rem; }
+      .panel-card { padding: 1.1rem; border-radius: 18px; margin-bottom: 1.2rem; }
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+      .kpi-card { padding: 1rem; border-radius: 16px; }
+      .kpi-val { font-size: 1.7rem; }
+      .btn-action { padding: 8px 12px; min-height: 36px; }
+      th, td { padding: 0.8rem 0.6rem; }
+
+      /* iOS: 16px inputs prevent auto-zoom on focus */
+      input, select, textarea { font-size: 16px; padding: 0.85rem 0.95rem; }
+
+      /* toasts slide from the top, full width */
+      #toast-container { left: 0.8rem; right: 0.8rem; top: calc(0.8rem + env(safe-area-inset-top)); }
+      .toast { transform: translateY(-160%); }
+      .toast.show { transform: translateY(0); }
+
+      /* chat hub: list on top, conversation below */
+      .chat-hub-container { grid-template-columns: 1fr; grid-template-rows: minmax(140px, 32%) 1fr; height: 78vh; height: 78dvh; min-height: 520px; }
+      .chat-user-list { border-right: none; border-bottom: 1px solid var(--border-subtle); }
+      .chat-bubble { max-width: 88%; }
+      .chat-composer { padding: 0.7rem 0.8rem calc(0.7rem + env(safe-area-inset-bottom)); }
+      .actions-flex-container { flex-wrap: wrap; }
+
+      /* modals -> native-style bottom sheets */
+      .modal-overlay { align-items: flex-end; padding: 0; background: rgba(0, 0, 0, 0.72); backdrop-filter: none; -webkit-backdrop-filter: none; }
+      .modal-box {
+        max-width: 100% !important; width: 100%; max-height: 92vh; max-height: 92dvh;
+        border-radius: 24px 24px 0 0; border-bottom: none;
+        padding: 1.4rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom));
+        animation: sheetUp 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.6);
+      }
+      .modal-box::before {
+        content: ''; display: block; width: 44px; height: 5px; border-radius: 5px;
+        background: rgba(255, 255, 255, 0.22); margin: -0.5rem auto 1rem;
+      }
+
+      /* phone: one-row header */
+      .hide-sm { display: none; }
+      .brand { flex: 1 1 auto; }
+      header > div:last-child { flex: 0 0 auto; }
+
+      /* phone: search + export fit the screen */
+      .search-tools { width: 100%; }
+      #student-search-input { width: 100% !important; flex: 1; min-width: 0; }
+      .panel-header-row > div { max-width: 100%; }
+      .panel-header-row .period-filter-group { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+
+      /* phone: Students list becomes cards (all action buttons visible, no sideways scrolling) */
+      .students-table, .students-table tbody, .students-table tr, .students-table td,
+      .stack-table, .stack-table tbody, .stack-table tr, .stack-table td { display: block; width: 100%; }
+      .students-table thead, .stack-table thead { display: none; }
+      .students-table tr, .stack-table tr {
+        background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle);
+        border-radius: 16px; padding: 0.9rem 1rem; margin-bottom: 0.8rem;
+      }
+      .students-table td, .stack-table td { border: none; padding: 0.3rem 0; }
+      .students-table .actions-flex-container, .stack-table .actions-flex-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 0.4rem; }
+      .students-table .actions-flex-container .btn-action, .stack-table .actions-flex-container .btn-action { justify-content: center; }
+      .stack-table td > .btn-action, .stack-table td > .att-toggle-btn { width: 100%; justify-content: center; min-height: 40px; }
+      .stack-table td div[style*="max-width"] { max-width: 100% !important; }
+
+      /* attendance controls */
+      .att-controls { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; }
+      .att-controls select, .att-controls input { grid-column: 1 / -1; width: 100% !important; }
+      .att-controls .btn-action { justify-content: center; padding: 0.7rem 0.6rem !important; min-height: 42px; }
+      .att-controls .btn-action:last-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 480px) {
+      [style*="grid-template-columns: 1fr 1fr"], [style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 380px) {
+      .brand { font-size: 0.78rem; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -261,15 +378,8 @@
   <header>
     <div class="brand">
       <span style="color:var(--accent-orange)">✳</span>
-      SHAPE & SHINE // ADMIN
+      SHAPE & SHINE<span class="hide-sm">&nbsp;// ADMIN</span>
     </div>
-
-    <div class="header-actions">
-      <button class="btn-top" onclick="openSettingsModal()" title="Social Media & Backup Settings">⚙️ Settings</button>
-      <a href="index.html" class="btn-top">HOME</a>
-      <button class="btn-top" onclick="localStorage.clear(); location.href='index.html';">LOGOUT</button>
-    </div>
-
     <div class="admin-nav-tabs">
       <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard', this)">
         Dashboard <span id="nav-inquiry-badge" class="nav-badge-dot" style="display:none;">● * New</span>
@@ -285,6 +395,11 @@
       <button class="tab-btn" data-tab="materials" onclick="switchTab('materials', this)">Materials</button>
       <button class="tab-btn" data-tab="gallery" onclick="switchTab('gallery', this)">📸 Gallery</button>
       <button class="tab-btn" data-tab="teachers" onclick="switchTab('teachers', this)">👨‍🏫 Teachers Team</button>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn-top" onclick="openSettingsModal()" title="Social Media & Backup Settings" aria-label="Settings">⚙️<span class="hide-sm"> Settings</span></button>
+      <a href="index.html" class="btn-top">HOME</a>
+      <button class="btn-top" onclick="localStorage.clear(); location.href='index.html';">LOGOUT</button>
     </div>
   </header>
 
@@ -304,89 +419,102 @@
         <div class="panel-header-row">
           <div>
             <h2 class="panel-title" id="revenue-chart-title" style="margin-bottom:0.2rem;"><span>📊</span> REVENUE & ENROLLMENT ANALYTICS</h2>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Real-time financial analytics with live calculation engine</p>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin:0;">Real-time financial analytics with live calculation engine</p>
           </div>
           
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
             <div class="period-filter-group">
-              <button class="period-btn active" onclick="changeAnalyticsPeriod('all', this)">All</button>
-              <button class="period-btn" onclick="changeAnalyticsPeriod('1m', this)">1M</button>
-              <button class="period-btn" onclick="changeAnalyticsPeriod('6m', this)">6M</button>
-              <button class="period-btn" onclick="changeAnalyticsPeriod('1y', this)">1Y</button>
+              <button class="period-btn active" onclick="changeAnalyticsPeriod('all', this)">All Time</button>
+              <button class="period-btn" onclick="changeAnalyticsPeriod('1m', this)">1 Month</button>
+              <button class="period-btn" onclick="changeAnalyticsPeriod('6m', this)">6 Months</button>
+              <button class="period-btn" onclick="changeAnalyticsPeriod('1y', this)">1 Year</button>
             </div>
 
-            <button class="btn-action" style="padding:0.55rem 0.95rem; background:rgba(46,213,115,0.2); border-color:var(--success); color:var(--success); font-size:0.76rem;" onclick="exportStudentsCsv()">
-              📥 Export CSV
+            <button class="btn-action" style="padding:0.6rem 1.2rem; background:rgba(46,213,115,0.2); border-color:var(--success); color:var(--success); font-size:0.82rem;" onclick="exportStudentsCsv()">
+              📥 Export Excel (CSV)
             </button>
           </div>
         </div>
 
         <!-- DATE PICKER & STANDARD FILTER BAR -->
-        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:14px; padding:1rem; margin-bottom:1.4rem; display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-          <div style="flex:1; min-width:160px;">
-            <label class="input-label">Standard Filter</label>
+        <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:16px; padding:1.2rem; margin-bottom:1.8rem; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:200px;">
+            <label class="input-label">Filter by Standard</label>
             <select id="analytics-std-filter" onchange="runAnalyticsQuery()"></select>
           </div>
-          <div style="flex:1; min-width:130px;">
-            <label class="input-label">From Date</label>
+          <div style="flex:1; min-width:160px;">
+            <label class="input-label">From Date (Start)</label>
             <input type="date" id="analytics-start-date" />
           </div>
-          <div style="flex:1; min-width:130px;">
-            <label class="input-label">To Date</label>
+          <div style="flex:1; min-width:160px;">
+            <label class="input-label">To Date (End)</label>
             <input type="date" id="analytics-end-date" />
           </div>
-          <div style="width:100%; max-width:180px;">
-            <button class="btn-action" style="width:100%; padding:0.75rem; justify-content:center; background:var(--accent-orange); color:#fff; border-color:var(--accent-orange); font-weight:800;" onclick="applyCustomDateAnalytics()">
-              Filter 🔍
+          <div>
+            <button class="btn-action" style="padding:0.8rem 1.4rem; background:var(--accent-orange); color:#fff; border-color:var(--accent-orange); font-weight:800;" onclick="applyCustomDateAnalytics()">
+              Apply Date Filter 🔍
             </button>
           </div>
         </div>
 
         <!-- STATS OVERVIEW CARDS -->
-        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom: 1.5rem;">
-          <div class="kpi-card" style="padding:1rem; background:rgba(255,255,255,0.01);">
-            <div class="kpi-label">EXPECTED REVENUE</div>
-            <div class="kpi-val" id="analytics-total-expected" style="font-size:1.6rem; color:#fff;">₹0</div>
+        <div class="kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 2rem;">
+          <div class="kpi-card" style="padding:1.2rem; background:rgba(255,255,255,0.01);">
+            <div class="kpi-label">TOTAL EXPECTED REVENUE</div>
+            <div class="kpi-val" id="analytics-total-expected" style="font-size:1.8rem; color:#fff;">₹0</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Students Count × Course Fee</div>
           </div>
-          <div class="kpi-card" style="padding:1rem; background:rgba(46,213,115,0.05); border-color:rgba(46,213,115,0.2);">
-            <div class="kpi-label" style="color:var(--success);">COLLECTED</div>
-            <div class="kpi-val" id="chart-collected" style="font-size:1.6rem; color:var(--success);">₹0</div>
+          <div class="kpi-card" style="padding:1.2rem; background:rgba(46,213,115,0.05); border-color:rgba(46,213,115,0.2);">
+            <div class="kpi-label" style="color:var(--success);">COLLECTED REVENUE</div>
+            <div class="kpi-val" id="chart-collected" style="font-size:1.8rem; color:var(--success);">₹0</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Cleared Fee Payments</div>
           </div>
-          <div class="kpi-card" style="padding:1rem; background:rgba(255,71,87,0.05); border-color:rgba(255,71,87,0.2);">
-            <div class="kpi-label" style="color:var(--danger);">PENDING</div>
-            <div class="kpi-val" id="chart-pending" style="font-size:1.6rem; color:var(--danger);">₹0</div>
+          <div class="kpi-card" style="padding:1.2rem; background:rgba(255,71,87,0.05); border-color:rgba(255,71,87,0.2);">
+            <div class="kpi-label" style="color:var(--danger);">PENDING REVENUE</div>
+            <div class="kpi-val" id="chart-pending" style="font-size:1.8rem; color:var(--danger);">₹0</div>
+            <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px;">Due Balance Remaining</div>
           </div>
         </div>
 
         <!-- 3 LIVE INTERACTIVE CHARTS -->
-        <div class="charts-responsive-grid">
-          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:16px; border:1px solid var(--border-subtle); text-align:center;">
-            <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:0.6rem;">COLLECTION RATIO</div>
-            <div style="height:190px; position:relative;"><canvas id="revenuePieChart"></canvas></div>
+        <div style="display:grid; grid-template-columns: 1fr 1.4fr 1fr; gap:1.5rem; align-items:center; margin-bottom:2rem;">
+          
+          <div style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:18px; border:1px solid var(--border-subtle); text-align:center;">
+            <div style="font-size:0.82rem; font-weight:800; color:var(--text-muted); margin-bottom:0.8rem;">REVENUE COLLECTION RATIO</div>
+            <div style="height:220px; position:relative;">
+              <canvas id="revenuePieChart"></canvas>
+            </div>
           </div>
-          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:16px; border:1px solid var(--border-subtle);">
-            <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:0.6rem;">EXPECTED VS COLLECTED</div>
-            <div style="height:190px;"><canvas id="revenueBarChart"></canvas></div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:18px; border:1px solid var(--border-subtle);">
+            <div style="font-size:0.82rem; font-weight:800; color:var(--text-muted); margin-bottom:0.8rem;">CLASS-WISE EXPECTED VS COLLECTED REVENUE</div>
+            <div style="height:220px;">
+              <canvas id="revenueBarChart"></canvas>
+            </div>
           </div>
-          <div style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:16px; border:1px solid var(--border-subtle); text-align:center;">
-            <div style="font-size:0.78rem; font-weight:800; color:var(--text-muted); margin-bottom:0.6rem;">ENROLLMENT / CLASS</div>
-            <div style="height:190px; position:relative;"><canvas id="studentsPieChart"></canvas></div>
+
+          <div style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:18px; border:1px solid var(--border-subtle); text-align:center;">
+            <div style="font-size:0.82rem; font-weight:800; color:var(--text-muted); margin-bottom:0.8rem;">STUDENTS ENROLLED PER CLASS</div>
+            <div style="height:220px; position:relative;">
+              <canvas id="studentsPieChart"></canvas>
+            </div>
           </div>
+
         </div>
 
         <!-- CLASS-WISE DETAILED FINANCIAL SUMMARY TABLE -->
-        <div style="margin-top:1.2rem;">
-          <h3 style="font-size:0.88rem; font-weight:800; margin-bottom:0.6rem; color:#fff;">CLASS-WISE FINANCIAL SUMMARY</h3>
+        <div style="margin-top:1.5rem;">
+          <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:0.8rem; color:#fff;">CLASS-WISE DETAILED FINANCIAL SUMMARY</h3>
           <div class="data-table-wrap">
             <table>
               <thead>
                 <tr style="background:#14171d;">
-                  <th>Standard</th>
-                  <th>Students</th>
-                  <th>Fee/Std</th>
-                  <th>Expected</th>
-                  <th>Collected</th>
-                  <th>Pending</th>
+                  <th>Standard / Class</th>
+                  <th>Students Enrolled</th>
+                  <th>Course Fee Per Student</th>
+                  <th>Total Expected Revenue</th>
+                  <th>Total Collected</th>
+                  <th>Pending Balance</th>
                 </tr>
               </thead>
               <tbody id="analytics-details-tbody"></tbody>
@@ -400,16 +528,16 @@
       <section class="panel-card">
         <div class="panel-header-row">
           <h2 class="panel-title" style="margin-bottom:0;"><span>📞</span> ADMISSION ENQUIRY LEADS</h2>
-          <button class="btn-action" onclick="markAllInquiriesRead()">Mark All As Read</button>
+          <button class="btn-action" onclick="markAllInquiriesRead()">Mark All Leads As Read</button>
         </div>
         <div class="data-table-wrap">
-          <table>
+          <table class="stack-table">
             <thead>
               <tr>
                 <th>Parent / Student</th>
                 <th>Standard</th>
                 <th>Phone</th>
-                <th style="min-width: 200px;">Parent's Query</th>
+                <th style="min-width: 250px;">Parent's Message Query</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -424,26 +552,26 @@
       <section class="panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title" style="margin-bottom:0.2rem;"><span>●</span> STUDENT DIRECTORY</h2>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Manage accounts, fees, receipts, direct WhatsApp alerts, & promotions</p>
+            <h2 class="panel-title" style="margin-bottom:0.25rem;"><span>●</span> STUDENT DIRECTORY</h2>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Manage student accounts, fees, receipts, direct WhatsApp alerts, and class promotions</p>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; width:100%; max-width:380px;">
-            <input type="text" id="student-search-input" placeholder="Search name, phone, email..." oninput="renderStudentsTable()" style="padding:0.6rem 0.85rem;" />
-            <button class="btn-action" onclick="exportStudentsCsv()" style="padding:0.6rem 0.95rem; background:rgba(46,213,115,0.15); border-color:var(--success); color:var(--success);">📥 CSV</button>
+          <div class="search-tools" style="display:flex; gap:10px; align-items:center;">
+            <input type="text" id="student-search-input" placeholder="Search by name, phone or email..." oninput="renderStudentsTable()" style="width:280px; padding:0.65rem 1rem;" />
+            <button class="btn-action" onclick="exportStudentsCsv()" style="padding:0.65rem 1.2rem; background:rgba(46,213,115,0.15); border-color:var(--success); color:var(--success);">📥 Export CSV</button>
           </div>
         </div>
 
         <div class="std-filter-container" id="std-filter-bar"></div>
 
         <div class="data-table-wrap">
-          <table>
+          <table class="students-table">
             <thead>
               <tr>
-                <th>Student Name</th>
-                <th>Standard</th>
-                <th>Contact</th>
-                <th>Fee Info</th>
-                <th style="min-width: 320px;">Actions</th>
+                <th style="width: 20%;">Student Name</th>
+                <th style="width: 17%;">Standard</th>
+                <th style="width: 18%;">Contact</th>
+                <th style="width: 17%;">Fee Info & Plan</th>
+                <th style="min-width: 420px;">Direct Alerts & Actions</th>
               </tr>
             </thead>
             <tbody id="students-tbody"></tbody>
@@ -458,29 +586,29 @@
         <div class="panel-header-row">
           <div>
             <h2 class="panel-title" style="margin-bottom:0.2rem;"><span>📅</span> DAILY ATTENDANCE TRACKER</h2>
-            <p style="font-size:0.78rem; color:var(--text-muted); margin:0;">Select Standard & Date to mark attendance with 1-click absent alerts</p>
+            <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Select Standard & Date to record attendance. Absent students can receive 1-click WhatsApp alerts!</p>
           </div>
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <select id="att-select-std" style="width:140px;" onchange="loadAttendanceList()"></select>
-            <input type="date" id="att-select-date" style="width:130px;" onchange="loadAttendanceList()" />
-            <button class="btn-action" onclick="markAllAttendance('Present')">✓ All Present</button>
-            <button class="btn-action" onclick="markAllAttendance('Absent')">✖ All Absent</button>
-            <button class="btn-action" style="background:var(--accent-orange); color:#fff; border-color:var(--accent-orange);" onclick="saveAttendance()">
-              SAVE ✓
+          <div class="att-controls" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <select id="att-select-std" style="width:200px;" onchange="loadAttendanceList()"></select>
+            <input type="date" id="att-select-date" style="width:160px;" onchange="loadAttendanceList()" />
+            <button class="btn-action" style="padding:0.7rem 1.2rem;" onclick="markAllAttendance('Present')">✓ Mark All Present</button>
+            <button class="btn-action" style="padding:0.7rem 1.2rem;" onclick="markAllAttendance('Absent')">✖ Mark All Absent</button>
+            <button class="btn-action" style="padding:0.7rem 1.5rem; background:var(--accent-orange); color:#fff; border-color:var(--accent-orange);" onclick="saveAttendance()">
+              SAVE ATTENDANCE ✓
             </button>
           </div>
         </div>
 
         <div class="data-table-wrap">
-          <table>
+          <table class="stack-table">
             <thead>
               <tr>
                 <th>Roll No</th>
                 <th>Student Name</th>
                 <th>Standard</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Absent Alert</th>
+                <th>Phone Number</th>
+                <th>Today's Status</th>
+                <th>1-Click Absent Alert</th>
               </tr>
             </thead>
             <tbody id="attendance-tbody"></tbody>
@@ -493,8 +621,8 @@
     <div id="tab-timings" class="tab-content">
       <section class="panel-card">
         <h2 class="panel-title"><span style="color:var(--accent-orange)">🕒</span> CONFIGURE CLASS BATCH TIMINGS</h2>
-        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.2rem;">
-          Configure morning and evening lecture schedules displayed on the student portal.
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+          Configure morning and evening lecture schedules per standard. These display directly on the student portal!
         </p>
         <div class="grid-cards-box" id="batch-timings-grid"></div>
       </section>
@@ -504,8 +632,8 @@
     <div id="tab-fees-setup" class="tab-content">
       <section class="panel-card">
         <h2 class="panel-title"><span style="color:var(--accent-orange)">⚙️</span> CONFIGURE STANDARD COURSE FEES</h2>
-        <p style="color:var(--text-muted); font-size:0.8rem; margin-bottom:1.2rem;">
-          Set default admission course fees and recommended monthly installments per standard.
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">
+          Set default admission course fees and recommended monthly installment amounts for each standard.
         </p>
         <div class="grid-cards-box" id="standard-fees-grid"></div>
       </section>
@@ -513,11 +641,12 @@
 
     <!-- TAB 6: 1-ON-1 MESSAGING HUB -->
     <div id="tab-messaging" class="tab-content">
-      <section class="panel-card" style="padding: 1.1rem;">
+      <section class="panel-card" style="padding: 1.5rem;">
         <div class="panel-header-row">
-          <h2 class="panel-title" style="margin-bottom:0;"><span>💬</span> 1-ON-1 CHAT HUB</h2>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <select id="new-chat-student-select" onchange="startNewChatWith(this.value)" style="width:180px; padding:0.4rem 0.6rem; font-size:0.8rem;">
+          <h2 class="panel-title" style="margin-bottom:0;"><span>💬</span> 1-ON-1 STUDENT CHAT HUB</h2>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <label style="font-size:0.8rem; color:var(--text-muted);">Start chat with:</label>
+            <select id="new-chat-student-select" onchange="startNewChatWith(this.value)" style="width:200px; padding:0.4rem 0.8rem; font-size:0.82rem;">
               <option value="">+ Choose Student</option>
             </select>
           </div>
@@ -527,7 +656,7 @@
           <div class="chat-user-list">
             <div class="chat-user-header">
               <span>CONVERSATIONS</span>
-              <span id="chat-count-pill" style="color:var(--accent-orange); font-size:0.72rem;">0 chats</span>
+              <span id="chat-count-pill" style="color:var(--accent-orange); font-size:0.75rem;">0 chats</span>
             </div>
             <div id="chat-thread-list"></div>
           </div>
@@ -535,30 +664,31 @@
           <div class="chat-active-pane">
             <div class="chat-active-header">
               <div>
-                <strong id="active-chat-name" style="font-size:0.95rem;">Select a Student</strong>
-                <div id="active-chat-std" style="font-size:0.72rem; color:var(--accent-orange); font-weight:700;">No student selected</div>
+                <strong id="active-chat-name" style="font-size:1.05rem;">Select a Student</strong>
+                <div id="active-chat-std" style="font-size:0.75rem; color:var(--accent-orange); font-weight:700;">No student selected</div>
               </div>
-              <div id="active-chat-phone" style="font-size:0.75rem; color:var(--text-muted);"></div>
+              <div id="active-chat-phone" style="font-size:0.8rem; color:var(--text-muted);"></div>
             </div>
 
             <div class="chat-thread-box" id="active-chat-history">
-              <div style="text-align:center; color:var(--text-muted); margin:auto; font-size:0.85rem;">
-                👈 Select a student from the list to open chat.
+              <div style="text-align:center; color:var(--text-muted); margin:auto; font-size:0.9rem;">
+                👈 Select a student from the list to open a 1-on-1 chat.
               </div>
             </div>
 
             <div class="chat-composer" id="composer-area" style="display:none;">
-              <input type="text" id="hub-reply-msg" placeholder="Type personal reply..." />
+              <input type="text" id="hub-reply-msg" placeholder="Type personal reply to this student..." />
               <button class="btn-send-chat" onclick="sendHubReply()">Send →</button>
             </div>
           </div>
+
         </div>
       </section>
     </div>
 
     <!-- TAB 7: NOTICES & BULK MARKS ENTRY -->
     <div id="tab-notices" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
         
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">+</span> PUBLISH NOTICE</h2>
@@ -576,25 +706,25 @@
 
         <!-- BULK MARKS SHEET -->
         <section class="panel-card">
-          <h2 class="panel-title"><span>🏆</span> TEST MARKS ENTRY</h2>
-          <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:1rem;">
+          <h2 class="panel-title"><span>🏆</span> STANDARD-WISE TEST MARKS ENTRY</h2>
+          <p style="font-size:0.82rem; color:var(--text-muted); margin-bottom:1.2rem;">
             Select standard to load enrolled students into a quick score entry sheet.
           </p>
 
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:0.8rem;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:1rem;">
             <div class="input-group">
-              <label class="input-label">Standard</label>
+              <label class="input-label">Select Standard / Class</label>
               <select id="bulk-marks-std" onchange="loadStudentsForBulkMarks()">
-                <option value="">-- Choose --</option>
+                <option value="">-- Choose Standard --</option>
               </select>
             </div>
             <div class="input-group">
               <label class="input-label">Subject</label>
-              <input type="text" id="bulk-marks-subject" placeholder="Maths / Science" required />
+              <input type="text" id="bulk-marks-subject" placeholder="Maths / Science / Accounts" required />
             </div>
             <div class="input-group">
               <label class="input-label">Test Name</label>
-              <input type="text" id="bulk-marks-test-name" placeholder="Unit Test 1" required />
+              <input type="text" id="bulk-marks-test-name" placeholder="Weekly Unit Test 1" required />
             </div>
             <div class="input-group">
               <label class="input-label">Total Marks</label>
@@ -603,13 +733,14 @@
           </div>
 
           <div id="bulk-marks-sheet-container" style="display:none;">
-            <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 12px; margin-bottom: 0.8rem;">
+            <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 14px; margin-bottom: 1rem;">
               <table>
                 <thead>
                   <tr style="background:#14171d;">
                     <th>Roll No</th>
-                    <th>Name</th>
-                    <th>Score</th>
+                    <th>Student Name</th>
+                    <th>Standard</th>
+                    <th style="width: 130px;">Score Obtained</th>
                   </tr>
                 </thead>
                 <tbody id="bulk-marks-tbody"></tbody>
@@ -617,24 +748,25 @@
             </div>
 
             <button type="button" class="btn-create" onclick="submitBulkMarks()">
-              SUBMIT MARKS & NOTIFY →
+              SUBMIT MARKS & NOTIFY ALL STUDENTS →
             </button>
           </div>
 
-          <div id="bulk-marks-placeholder" style="text-align:center; padding:1.5rem; color:var(--text-muted); font-size:0.82rem; background:rgba(255,255,255,0.01); border-radius:12px; border:1px dashed var(--border-subtle);">
-            Select a Standard above to open score sheet.
+          <div id="bulk-marks-placeholder" style="text-align:center; padding:2rem; color:var(--text-muted); font-size:0.88rem; background:rgba(255,255,255,0.01); border-radius:14px; border:1px dashed var(--border-subtle);">
+            Select a Standard above to open the student marks entry sheet.
           </div>
         </section>
+
       </div>
 
       <!-- ACTIVE PUBLISHED NOTICES WITH DELETE ACTION -->
-      <section class="panel-card" style="margin-top:1.5rem;">
+      <section class="panel-card" style="margin-top:2rem;">
         <div class="panel-header-row">
           <h2 class="panel-title" style="margin-bottom:0;"><span>📢</span> ACTIVE PUBLISHED NOTICES</h2>
           <span id="notices-count-badge" style="font-size:0.75rem; color:var(--accent-orange); font-weight:700;">0 Notices</span>
         </div>
         <div class="data-table-wrap">
-          <table>
+          <table class="stack-table">
             <thead>
               <tr>
                 <th>Title</th>
@@ -650,10 +782,10 @@
       </section>
 
       <!-- PUBLISHED TEST MARKS RECORDS -->
-      <section class="panel-card" style="margin-top:1.5rem;">
-        <h2 class="panel-title"><span>📊</span> PUBLISHED TEST MARKS</h2>
+      <section class="panel-card" style="margin-top:2rem;">
+        <h2 class="panel-title"><span>📊</span> PUBLISHED TEST MARKS RECORDS</h2>
         <div class="data-table-wrap">
-          <table>
+          <table class="stack-table">
             <thead><tr><th>Student</th><th>Test Name</th><th>Subject</th><th>Score</th><th>Action</th></tr></thead>
             <tbody id="marks-tbody"></tbody>
           </table>
@@ -663,21 +795,24 @@
 
     <!-- TAB 8: STUDY MATERIALS -->
     <div id="tab-materials" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">📥</span> UPLOAD STUDY MATERIAL</h2>
           <form onsubmit="event.preventDefault(); uploadMaterial();">
-            <div class="input-group"><label class="input-label">Title / Chapter</label><input type="text" id="mat-title" placeholder="Chapter 1: Chemical Reactions" required /></div>
-            <div class="input-group"><label class="input-label">Target Standard</label><select id="mat-std" required></select></div>
-            <div class="input-group"><label class="input-label">Subject</label><input type="text" id="mat-sub" placeholder="Science / Maths" required /></div>
+            <div class="input-group"><label class="input-label">Title / Chapter Name</label><input type="text" id="mat-title" placeholder="Chapter 1: Chemical Reactions" required /></div>
+            <div class="input-group">
+              <label class="input-label">Target Standard</label>
+              <select id="mat-std" required></select>
+            </div>
+            <div class="input-group"><label class="input-label">Subject</label><input type="text" id="mat-sub" placeholder="Science / Maths / Accounts" required /></div>
             
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">📄 Option 1: PDF File</label>
-              <input type="file" id="mat-pdf-file" accept="application/pdf" style="padding:0.4rem; background:#11141a;" />
+            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+              <label class="input-label">📄 Option 1: Upload PDF File</label>
+              <input type="file" id="mat-pdf-file" accept="application/pdf" style="padding:0.5rem; background:#11141a;" />
             </div>
 
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🔗 Option 2: Web or Drive Link</label>
+            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+              <label class="input-label">🔗 Option 2: Web or Google Drive Link</label>
               <input type="url" id="mat-url" placeholder="https://drive.google.com/..." />
             </div>
 
@@ -688,7 +823,7 @@
         <section class="panel-card">
           <h2 class="panel-title"><span>📚</span> ACTIVE STUDY MATERIALS</h2>
           <div class="data-table-wrap">
-            <table>
+            <table class="stack-table">
               <thead><tr><th>Title</th><th>Std</th><th>Type</th><th>Action</th></tr></thead>
               <tbody id="materials-tbody"></tbody>
             </table>
@@ -699,80 +834,83 @@
 
     <!-- TAB 9: INSTITUTE GALLERY -->
     <div id="tab-gallery" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
+        
         <section class="panel-card">
-          <h2 class="panel-title"><span style="color:var(--accent-orange)">📸</span> UPLOAD PHOTO</h2>
+          <h2 class="panel-title"><span style="color:var(--accent-orange)">📸</span> UPLOAD GALLERY PHOTO</h2>
           <form onsubmit="event.preventDefault(); uploadGalleryPhoto();">
-            <div class="input-group"><label class="input-label">Photo Title</label><input type="text" id="gal-title" placeholder="Annual Topper Awards 2026" required /></div>
+            <div class="input-group"><label class="input-label">Photo Title / Event Name</label><input type="text" id="gal-title" placeholder="Annual Topper Awards 2026" required /></div>
             <div class="input-group"><label class="input-label">Event Date</label><input type="date" id="gal-date" required /></div>
 
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🖼️ Option 1: Upload File</label>
-              <input type="file" id="gal-file" accept="image/*" onchange="previewGalleryImage(this)" style="padding:0.4rem; background:#11141a;" />
-              <div id="gal-preview-box" style="display:none; margin-top:8px; text-align:center;">
-                <img id="gal-preview-img" src="" style="max-height:120px; border-radius:8px;" />
+            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+              <label class="input-label">🖼️ Option 1: Upload Image File (JPG / PNG / WebP)</label>
+              <input type="file" id="gal-file" accept="image/*" onchange="previewGalleryImage(this)" style="padding:0.5rem; background:#11141a;" />
+              <div id="gal-preview-box" style="display:none; margin-top:10px; text-align:center;">
+                <img id="gal-preview-img" src="" style="max-height:140px; border-radius:10px; border:1px solid var(--border-subtle);" />
               </div>
             </div>
 
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🔗 Option 2: Image Web Link</label>
+            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+              <label class="input-label">🔗 Option 2: Image Web Link (URL)</label>
               <input type="url" id="gal-url" placeholder="https://images.unsplash.com/..." />
             </div>
 
-            <div class="input-group"><label class="input-label">Description</label><textarea id="gal-desc" rows="2"></textarea></div>
+            <div class="input-group"><label class="input-label">Short Description</label><textarea id="gal-desc" rows="3" placeholder="Brief note about this event..."></textarea></div>
             <button type="submit" id="btn-upload-gal" class="btn-create">PUBLISH TO GALLERY →</button>
           </form>
         </section>
 
         <section class="panel-card">
           <div class="panel-header-row">
-            <h2 class="panel-title" style="margin-bottom:0;"><span>🖼️</span> CURRENT PHOTOS</h2>
+            <h2 class="panel-title" style="margin-bottom:0;"><span>🖼️</span> CURRENT WEBSITE GALLERY PHOTOS</h2>
             <span id="gal-count-badge" style="font-size:0.75rem; color:var(--accent-orange); font-weight:700;">0 Photos</span>
           </div>
-          <div class="admin-gallery-grid" id="admin-gallery-cards-container"></div>
+          <div class="admin-gallery-grid" id="admin-gallery-cards-container">
+            <p style="color:var(--text-muted); font-size:0.85rem;">No photos uploaded to gallery yet.</p>
+          </div>
         </section>
+
       </div>
     </div>
 
     <!-- TAB 10: TEACHERS TEAM -->
     <div id="tab-teachers" class="tab-content">
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
+        
         <section class="panel-card">
-          <h2 class="panel-title"><span style="color:var(--accent-orange)">👨‍🏫</span> ADD TEACHER</h2>
+          <h2 class="panel-title"><span style="color:var(--accent-orange)">👨‍🏫</span> ADD TEACHER PROFILE</h2>
           <form onsubmit="event.preventDefault(); submitAddTeacher();">
-            <div class="input-group"><label class="input-label">Full Name</label><input type="text" id="t-name" placeholder="Prof. Rajesh Sharma" required /></div>
-            <div class="input-group"><label class="input-label">Subject</label><input type="text" id="t-subject" placeholder="Physics & Maths" required /></div>
+            <div class="input-group"><label class="input-label">Teacher Full Name</label><input type="text" id="t-name" placeholder="Prof. Rajesh Sharma" required /></div>
+            <div class="input-group"><label class="input-label">Subject(s) Taught</label><input type="text" id="t-subject" placeholder="Physics & Mathematics" required /></div>
             
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-              <div class="input-group"><label class="input-label">Experience</label><input type="text" id="t-exp" placeholder="12+ Years" required /></div>
-              <div class="input-group"><label class="input-label">Qualification</label><input type="text" id="t-qual" placeholder="M.Sc, B.Ed" /></div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+              <div class="input-group"><label class="input-label">Experience</label><input type="text" id="t-exp" placeholder="12+ Years Exp" required /></div>
+              <div class="input-group"><label class="input-label">Qualification</label><input type="text" id="t-qual" placeholder="M.Sc (Physics), B.Ed" /></div>
             </div>
 
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🖼️ Option 1: Upload Photo</label>
-              <input type="file" id="t-file" accept="image/*" onchange="previewTeacherImage(this)" style="padding:0.4rem; background:#11141a;" />
-              <div id="t-preview-box" style="display:none; margin-top:6px; text-align:center;">
-                <img id="t-preview-img" src="" style="max-height:110px; border-radius:8px;" />
+            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+              <label class="input-label">🖼️ Upload Teacher Photo</label>
+              <input type="file" id="t-file" accept="image/*" onchange="previewTeacherImage(this)" style="padding:0.5rem; background:#11141a;" />
+              <div id="t-preview-box" style="display:none; margin-top:8px; text-align:center;">
+                <img id="t-preview-img" src="" style="max-height:130px; border-radius:10px; border:1px solid var(--border-subtle);" />
               </div>
             </div>
 
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🔗 Option 2: Image URL</label>
-              <input type="url" id="t-url" placeholder="https://..." />
-            </div>
-
-            <div class="input-group"><label class="input-label">Bio Note</label><textarea id="t-desc" rows="2"></textarea></div>
-            <button type="submit" id="btn-add-teacher" class="btn-create">PUBLISH PROFILE →</button>
+            <div class="input-group"><label class="input-label">Teacher Bio / Description</label><textarea id="t-desc" rows="3" placeholder="Specialist in conceptual clarity and board shortcuts..."></textarea></div>
+            <button type="submit" id="btn-add-teacher" class="btn-create">PUBLISH TEACHER PROFILE →</button>
           </form>
         </section>
 
         <section class="panel-card">
           <div class="panel-header-row">
-            <h2 class="panel-title" style="margin-bottom:0;"><span>🎓</span> FACULTY TEAM</h2>
+            <h2 class="panel-title" style="margin-bottom:0;"><span>🎓</span> FACULTY TEAM SHOWCASE</h2>
             <span id="teacher-count-badge" style="font-size:0.75rem; color:var(--accent-orange); font-weight:700;">0 Faculty</span>
           </div>
-          <div class="admin-gallery-grid" id="admin-teachers-container"></div>
+          <div class="admin-gallery-grid" id="admin-teachers-container">
+            <p style="color:var(--text-muted); font-size:0.85rem;">No faculty profiles added yet.</p>
+          </div>
         </section>
+
       </div>
     </div>
 
@@ -784,11 +922,11 @@
 
   <!-- 1. WHATSAPP DIRECT ALERT MODAL -->
   <div class="modal-overlay" id="whatsapp-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size:1.15rem; font-weight:800; color:var(--whatsapp);">📲 Send WhatsApp Alert</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;" id="wa-modal-subtitle">Choose template</p>
+          <h3 style="font-size:1.25rem; font-weight:800; color:var(--whatsapp);">📲 Send WhatsApp Alert</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;" id="wa-modal-subtitle">Choose a pre-typed template</p>
         </div>
         <button onclick="closeWhatsAppModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
@@ -797,48 +935,48 @@
       <input type="hidden" id="wa-student-name" />
 
       <div class="input-group">
-        <label class="input-label">Alert Type</label>
+        <label class="input-label">Choose Alert Type</label>
         <select id="wa-template-select" onchange="updateWhatsAppMessagePreview()">
-          <option value="fee">💰 Fee Reminder</option>
-          <option value="absent">⚠️ Absent Alert</option>
-          <option value="result">🏆 Exam Result</option>
-          <option value="custom">✍️ Custom Message</option>
+          <option value="fee">💰 Fee Reminder Notice</option>
+          <option value="absent">⚠️ Absent Today Alert</option>
+          <option value="result">🏆 Exam Result Notification</option>
+          <option value="custom">✍️ Custom Personal Message</option>
         </select>
       </div>
 
       <div class="input-group">
         <label class="input-label">Message Preview</label>
-        <textarea id="wa-msg-preview" rows="4" style="font-size:0.85rem; line-height:1.4;"></textarea>
+        <textarea id="wa-msg-preview" rows="5" style="font-size:0.88rem; line-height:1.4;"></textarea>
       </div>
 
       <button class="btn-create" style="background:var(--whatsapp);" onclick="sendWhatsAppNow()">OPEN WHATSAPP →</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeWhatsAppModal()">Cancel</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeWhatsAppModal()">Cancel</button>
     </div>
   </div>
 
-  <!-- 2. FEE RECEIPT MODAL -->
+  <!-- 2. FEE RECEIPT MODAL (STRICT MATH LOCK) -->
   <div class="modal-overlay" id="receipt-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size:1.15rem; font-weight:800;">🧾 Create Fee Receipt</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;">Generate payment receipt</p>
+          <h3 style="font-size:1.25rem; font-weight:800;">🧾 Create Fee Receipt</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Generate official fee payment receipt</p>
         </div>
         <button onclick="closeReceiptModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
 
       <input type="hidden" id="rec-student-id" />
-      <div class="input-group"><label class="input-label">Student</label><input type="text" id="rec-student-name" disabled style="opacity:0.85; font-weight:700;" /></div>
+      <div class="input-group"><label class="input-label">Student Name</label><input type="text" id="rec-student-name" disabled style="opacity:0.85; font-weight:700;" /></div>
       
-      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); padding:0.8rem; border-radius:12px; margin-bottom:0.8rem; font-size:0.82rem;" id="rec-balance-info"></div>
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); padding:0.9rem; border-radius:12px; margin-bottom:1rem; font-size:0.85rem;" id="rec-balance-info"></div>
 
-      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div class="input-group">
-          <label class="input-label">Category</label>
+          <label class="input-label">Payment Category</label>
           <select id="rec-payment-type" onchange="toggleReceiptMonthField(this.value)">
-            <option value="One-Time Full Payment">One-Time Full</option>
+            <option value="One-Time Full Payment">One-Time Full Payment</option>
             <option value="Monthly Installment">Monthly Installment</option>
-            <option value="Partial Installment">Partial</option>
+            <option value="Partial Installment">Partial Installment</option>
           </select>
         </div>
         <div class="input-group" id="rec-month-group" style="display:none;">
@@ -849,57 +987,60 @@
 
       <div class="input-group">
         <label class="input-label">Amount Paid Now (₹)</label>
-        <input type="number" id="rec-amount" placeholder="Amount" min="1" required />
+        <input type="number" id="rec-amount" placeholder="Enter amount" min="1" required />
       </div>
       
       <div class="input-group">
-        <label class="input-label">Mode</label>
+        <label class="input-label">Payment Mode</label>
         <select id="rec-mode">
-          <option value="Online UPI / GPay / PhonePe">UPI (GPay/Paytm)</option>
+          <option value="Online UPI / GPay / PhonePe">Online UPI (GPay / PhonePe / Paytm)</option>
           <option value="Cash Payment">Cash Payment</option>
-          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Bank Transfer (NEFT/IMPS)">Bank Transfer (NEFT/IMPS)</option>
           <option value="Cheque">Cheque</option>
         </select>
       </div>
 
       <button class="btn-create" id="btn-create-receipt" onclick="submitGenerateReceipt()">CREATE & PRINT RECEIPT 🖨️</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeReceiptModal()">Cancel</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeReceiptModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 3. EDIT STUDENT MODAL -->
   <div class="modal-overlay" id="edit-modal">
     <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size: 1.15rem; font-weight:800;">Modify Student Profile</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;">Update details & fees</p>
+          <h3 style="font-size: 1.25rem; font-weight:800;">Modify Student Profile</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Update details, fees, and payment plan</p>
         </div>
         <button onclick="closeEditModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
       <input type="hidden" id="edit-id" />
       <div class="input-group"><label class="input-label">Full Name</label><input type="text" id="edit-name" required /></div>
-      <div class="input-group"><label class="input-label">Email</label><input type="email" id="edit-email" required /></div>
-      <div class="input-group"><label class="input-label">Phone</label><input type="text" id="edit-phone" maxlength="15" /></div>
-      <div class="input-group"><label class="input-label">Standard</label><select id="edit-std"></select></div>
+      <div class="input-group"><label class="input-label">Email Address</label><input type="email" id="edit-email" required /></div>
+      <div class="input-group"><label class="input-label">Contact Phone</label><input type="text" id="edit-phone" maxlength="15" /></div>
+      <div class="input-group">
+        <label class="input-label">Standard & Stream</label>
+        <select id="edit-std"></select>
+      </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
         <div class="input-group">
-          <label class="input-label">Plan</label>
+          <label class="input-label">Payment Plan</label>
           <select id="edit-payment-plan" onchange="toggleEditMonthlyField(this.value)">
-            <option value="One-Time">One-Time</option>
-            <option value="Monthly">Monthly</option>
+            <option value="One-Time">One-Time Course Fee</option>
+            <option value="Monthly">Monthly Installments</option>
           </select>
         </div>
         <div class="input-group">
-          <label class="input-label">Monthly Fee (₹)</label>
+          <label class="input-label">Monthly Fee (₹/month)</label>
           <input type="number" id="edit-monthly-fee" placeholder="1500" />
         </div>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <div class="input-group"><label class="input-label">Course Fee (₹)</label><input type="number" id="edit-total-fees" required /></div>
-        <div class="input-group"><label class="input-label">Paid Amount (₹)</label><input type="number" id="edit-paid-amount" required /></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="input-group"><label class="input-label">Total Course Fee (₹)</label><input type="number" id="edit-total-fees" required /></div>
+        <div class="input-group"><label class="input-label">Actual Paid Amount (₹)</label><input type="number" id="edit-paid-amount" required /></div>
       </div>
       
       <div class="input-group">
@@ -910,135 +1051,135 @@
         </select>
       </div>
 
-      <button class="btn-create" onclick="saveStudentEdit()">SAVE & UPDATE ✓</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-create" onclick="saveStudentEdit()">SAVE & UPDATE STUDENT ✓</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeEditModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 4. ACADEMIC CLASS PROMOTION MODAL -->
   <div class="modal-overlay" id="promote-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <div class="modal-box" style="max-width: 480px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size:1.15rem; font-weight:800; color:#be84dc;">🎓 Promote Student</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;">Advance to next standard</p>
+          <h3 style="font-size:1.25rem; font-weight:800; color:#be84dc;">🎓 Promote to Next Class</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Promote student to the next academic standard</p>
         </div>
         <button onclick="closePromoteModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
 
       <input type="hidden" id="promote-student-id" />
-      <div class="input-group"><label class="input-label">Student</label><input type="text" id="promote-student-name" disabled style="opacity:0.85; font-weight:700;" /></div>
+      <div class="input-group"><label class="input-label">Student Name</label><input type="text" id="promote-student-name" disabled style="opacity:0.85; font-weight:700;" /></div>
       <div class="input-group"><label class="input-label">Current Standard</label><input type="text" id="promote-curr-std" disabled style="opacity:0.85; color:var(--accent-orange); font-weight:800;" /></div>
-      <div class="input-group"><label class="input-label">Promote To</label><select id="promote-next-std"></select></div>
-      <div class="input-group"><label class="input-label">New Academic Session</label><input type="text" id="promote-session-year" value="2027-2028" required /></div>
+      <div class="input-group"><label class="input-label">Promote To (Next Standard)</label><select id="promote-next-std"></select></div>
+      <div class="input-group"><label class="input-label">New Academic Session Year</label><input type="text" id="promote-session-year" value="2027-2028" required /></div>
 
       <button class="btn-create" style="background:#9b59b6;" onclick="submitStudentPromotion()">CONFIRM PROMOTION ✓</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closePromoteModal()">Cancel</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closePromoteModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 5. SETTINGS & BACKUP DOWNLOAD MODAL -->
   <div class="modal-overlay" id="settings-modal">
-    <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <div class="modal-box" style="max-width: 500px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size:1.15rem; font-weight:800;">⚙️ Settings & Backup</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;">Configure links & database backup</p>
+          <h3 style="font-size:1.25rem; font-weight:800;">⚙️ Website Settings & Backup</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Configure social links & database backup</p>
         </div>
         <button onclick="closeSettingsModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
 
-      <div class="input-group"><label class="input-label">Instagram Link</label><input type="url" id="setting-insta" /></div>
-      <div class="input-group"><label class="input-label">Facebook Link</label><input type="url" id="setting-fb" /></div>
-      <div class="input-group"><label class="input-label">WhatsApp Number</label><input type="tel" id="setting-wa" maxlength="10" /></div>
-      <div class="input-group"><label class="input-label">YouTube Link</label><input type="url" id="setting-yt" /></div>
+      <div class="input-group"><label class="input-label">Instagram Profile Link</label><input type="url" id="setting-insta" placeholder="https://instagram.com/yourcoaching" /></div>
+      <div class="input-group"><label class="input-label">Facebook Page Link</label><input type="url" id="setting-fb" placeholder="https://facebook.com/yourcoaching" /></div>
+      <div class="input-group"><label class="input-label">Official WhatsApp Number (10 Digits)</label><input type="tel" id="setting-wa" placeholder="9824528709" maxlength="10" /></div>
+      <div class="input-group"><label class="input-label">YouTube Channel Link</label><input type="url" id="setting-yt" placeholder="https://youtube.com/@yourchannel" /></div>
 
-      <div style="margin: 0.9rem 0; background:rgba(255,255,255,0.03); padding:0.9rem; border-radius:12px; border:1px solid var(--border-subtle);">
-        <div style="font-size:0.8rem; font-weight:800; color:#fff; margin-bottom:3px;">🛡️ Database Backup Engine</div>
-        <p style="font-size:0.72rem; color:var(--text-muted); margin-bottom:8px;">Export permanent database dump in JSON.</p>
-        <button type="button" class="btn-action" style="padding:6px 12px; background:rgba(46,213,115,0.15); color:var(--success); border-color:var(--success); font-weight:800;" onclick="downloadBackupDatabase()">
-          📥 Download Backup (JSON)
+      <div style="margin: 1.2rem 0; background:rgba(255,255,255,0.03); padding:1rem; border-radius:14px; border:1px solid var(--border-subtle);">
+        <div style="font-size:0.82rem; font-weight:800; color:#fff; margin-bottom:4px;">🛡️ Safe Database Backup Engine</div>
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:10px;">Deleted accounts and promotion histories are safely preserved in database archive tables.</p>
+        <button type="button" class="btn-action" style="padding:8px 14px; background:rgba(46,213,115,0.15); color:var(--success); border-color:var(--success); font-weight:800;" onclick="downloadBackupDatabase()">
+          📥 Download Database Backup (JSON)
         </button>
       </div>
 
       <button class="btn-create" onclick="saveSiteSettings()">SAVE SETTINGS ✓</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeSettingsModal()">Cancel</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeSettingsModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 6. BATCH TIMING MODAL -->
   <div class="modal-overlay" id="timing-modal">
     <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size:1.15rem; font-weight:800;">Edit Batch Timings</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;" id="timing-modal-std">Standard</p>
+          <h3 style="font-size:1.25rem; font-weight:800;">Edit Batch Timings</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;" id="timing-modal-std">Standard</p>
         </div>
         <button onclick="closeTimingModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
       <input type="hidden" id="timing-std" />
-      <div class="input-group"><label class="input-label">Morning Batch</label><input type="text" id="timing-morning" placeholder="07:00 AM - 09:30 AM" required /></div>
-      <div class="input-group"><label class="input-label">Evening Batch</label><input type="text" id="timing-evening" placeholder="04:00 PM - 07:00 PM" required /></div>
+      <div class="input-group"><label class="input-label">Morning Batch Timing</label><input type="text" id="timing-morning" placeholder="07:00 AM - 09:30 AM" required /></div>
+      <div class="input-group"><label class="input-label">Evening Batch Timing</label><input type="text" id="timing-evening" placeholder="04:00 PM - 07:00 PM" required /></div>
       <button class="btn-create" onclick="saveBatchTiming()">SAVE TIMINGS ✓</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeTimingModal()">Cancel</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeTimingModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 7. CHANGE CLASS BASE FEE MODAL -->
   <div class="modal-overlay" id="class-fee-modal">
     <div class="modal-box">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.2rem;">
         <div>
-          <h3 style="font-size: 1.15rem; font-weight:800;">Update Standard Base Fee</h3>
-          <p style="color:var(--text-muted); font-size:0.78rem;">Configure fee defaults</p>
+          <h3 style="font-size: 1.25rem; font-weight:800;">Update Standard Base Fee</h3>
+          <p style="color:var(--text-muted); font-size:0.8rem;">Configure standard annual & monthly fee defaults</p>
         </div>
         <button onclick="closeClassFeeModal()" style="background:none; border:none; color:#888; font-size:1.5rem; cursor:pointer;">×</button>
       </div>
       <input type="hidden" id="modal-fee-std" />
-      <div class="input-group"><label class="input-label">Standard</label><input type="text" id="modal-fee-std-display" disabled style="opacity:0.85; font-weight:700; color:var(--accent-orange);" /></div>
+      <div class="input-group"><label class="input-label">Standard / Class</label><input type="text" id="modal-fee-std-display" disabled style="opacity:0.85; font-weight:700; color:var(--accent-orange);" /></div>
       
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-        <div class="input-group"><label class="input-label">Course Fee (₹)</label><input type="number" id="modal-fee-amount" required /></div>
-        <div class="input-group"><label class="input-label">Monthly Fee (₹)</label><input type="number" id="modal-fee-monthly" required /></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="input-group"><label class="input-label">Full Course Fee (₹)</label><input type="number" id="modal-fee-amount" required /></div>
+        <div class="input-group"><label class="input-label">Default Monthly Fee (₹)</label><input type="number" id="modal-fee-monthly" required /></div>
       </div>
 
-      <div style="margin: 0.8rem 0; background:rgba(255,255,255,0.04); padding:0.8rem; border-radius:12px; border:1px solid var(--border-subtle);">
-        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.82rem;">
-          <input type="checkbox" id="modal-fee-apply-existing" style="width:16px; height:16px;" checked />
-          <span>Apply to existing enrolled students</span>
+      <div style="margin: 1.2rem 0; background:rgba(255,255,255,0.04); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
+        <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:0.88rem;">
+          <input type="checkbox" id="modal-fee-apply-existing" style="width:18px; height:18px; cursor:pointer;" checked />
+          <span>Apply updated fee to all existing enrolled students of this class</span>
         </label>
       </div>
-      <button class="btn-create" onclick="saveClassFee()">UPDATE FEE ✓</button>
-      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.6rem; cursor:pointer; font-size:0.8rem;" onclick="closeClassFeeModal()">Cancel</button>
+      <button class="btn-create" onclick="saveClassFee()">UPDATE CLASS FEE ✓</button>
+      <button style="background:none; border:none; color:var(--text-muted); width:100%; margin-top:0.8rem; cursor:pointer;" onclick="closeClassFeeModal()">Cancel</button>
     </div>
   </div>
 
   <!-- 8. ANIMATED CONFIRMATION MODAL -->
   <div class="modal-overlay" id="confirm-modal">
-    <div class="modal-box" style="max-width: 380px; text-align: center;">
-      <div style="font-size: 2.3rem; margin-bottom: 0.5rem;">⚠️</div>
-      <h3 style="font-size: 1.15rem; font-weight:800; margin-bottom: 0.4rem;" id="confirm-modal-title">Are you sure?</h3>
-      <p style="color:var(--text-muted); font-size:0.82rem; line-height:1.4; margin-bottom: 1.3rem;" id="confirm-modal-desc">This action cannot be undone.</p>
-      <div style="display:flex; gap: 8px;">
-        <button style="flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border-subtle); color:#fff; padding:0.75rem; border-radius:10px; font-weight:700; cursor:pointer;" onclick="closeConfirmModal()">Cancel</button>
-        <button style="flex:1; background:var(--danger); border:none; color:#fff; padding:0.75rem; border-radius:10px; font-weight:700; cursor:pointer;" id="confirm-modal-yes">Confirm</button>
+    <div class="modal-box" style="max-width: 420px; text-align: center;">
+      <div style="font-size: 2.8rem; margin-bottom: 0.8rem;">⚠️</div>
+      <h3 style="font-size: 1.3rem; font-weight:800; margin-bottom: 0.5rem;" id="confirm-modal-title">Are you sure?</h3>
+      <p style="color:var(--text-muted); font-size:0.88rem; line-height:1.5; margin-bottom: 1.8rem;" id="confirm-modal-desc">This action cannot be undone.</p>
+      <div style="display:flex; gap: 10px;">
+        <button style="flex:1; background:rgba(255,255,255,0.08); border:1px solid var(--border-subtle); color:#fff; padding:0.9rem; border-radius:12px; font-weight:700; cursor:pointer;" onclick="closeConfirmModal()">Cancel</button>
+        <button style="flex:1; background:var(--danger); border:none; color:#fff; padding:0.9rem; border-radius:12px; font-weight:700; cursor:pointer;" id="confirm-modal-yes">Confirm</button>
       </div>
     </div>
   </div>
 
   <!-- FOOTER -->
   <footer>
-    <div style="max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:1.5rem; font-size:0.8rem; color:var(--text-muted);">
+    <div style="max-width:1400px; margin:0 auto; display:flex; justify-content:space-between; flex-wrap:wrap; gap:2rem; font-size:0.85rem; color:var(--text-muted);">
       <div>
-        <div style="font-weight:800; color:#fff; margin-bottom:0.3rem; display:flex; align-items:center; gap:6px;">
+        <div style="font-weight:800; color:#fff; margin-bottom:0.4rem; display:flex; align-items:center; gap:8px;">
           <span style="color:var(--accent-orange)">✳</span> SHAPE & SHINE COACHING CLASS
         </div>
-        <p>213, Shivnagar Society, Harinagar-2, Udhana, Surat, Gujarat 394210</p>
-        <p>Support Contact: 098245 28709</p>
+        <p>213, Shivnagar Society, Harinagar-2, Kashi Nagar, Udhana, Surat, Gujarat 394210</p>
+        <p>Support Contact: 098245 28709 | Admin Console Active</p>
       </div>
       <div style="text-align:right;">
-        <div>© 2026 SHAPE & SHINE COACHING.</div>
-        <div style="font-size:0.72rem; margin-top:2px;">Cloud PostgreSQL Powered</div>
+        <div>© 2026 SHAPE & SHINE COACHING. ALL RIGHTS RESERVED.</div>
+        <div style="font-size:0.75rem; margin-top:4px;">Protected by automated database recovery engine.</div>
       </div>
     </div>
   </footer>
@@ -1066,7 +1207,6 @@
     let currentAnalyticsPeriod = 'all';
     let activeChatStudentId = null;
     let pendingConfirmAction = null;
-    let isFetching = false;
     
     // Live Chart Instances
     let revenueDonutInstance = null;
@@ -1080,8 +1220,8 @@
       toast.className = `toast ${type}`;
       toast.innerHTML = `<span>${type === 'success' ? '✓' : '✖'}</span> ${message}`;
       container.appendChild(toast);
-      requestAnimationFrame(() => toast.classList.add('show'));
-      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 250); }, 3000);
+      setTimeout(() => toast.classList.add('show'), 20);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
     }
 
     function openConfirmModal(title, desc, onConfirm) {
@@ -1101,33 +1241,109 @@
       closeConfirmModal();
     });
 
+    // ========================================================
+    // FAST TAB SWITCHING + SMART DATA REFRESH
+    // - only the visible tab is rendered (other tabs render when opened)
+    // - unchanged server data is skipped completely (no re-render)
+    // - polling pauses when the screen is hidden, a popup is open or the user is scrolling
+    // ========================================================
+    let currentTab = 'dashboard';
+    let lastPayload = '';
+    let lastData = null;
+    let dataVersion = 0;
+    const renderedTabVersion = {};
+    let inFlight = null;
+    let lastScrollTs = 0;
+    let lastStudentSelectKey = '';
+
+    ['scroll', 'touchmove', 'wheel'].forEach(evt =>
+      window.addEventListener(evt, () => { lastScrollTs = Date.now(); }, { passive: true, capture: true })
+    );
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    function renderTab(tabId) {
+      if (!lastData || renderedTabVersion[tabId] === dataVersion) return;
+      renderedTabVersion[tabId] = dataVersion;
+      const data = lastData;
+
+      switch (tabId) {
+        case 'dashboard':
+          renderInquiriesTable(data.inquiries || []);
+          runAnalyticsQuery();
+          break;
+        case 'students':
+          renderStandardChips();
+          renderStudentsTable();
+          break;
+        case 'timings':
+          renderBatchTimings();
+          break;
+        case 'fees-setup':
+          renderFeesManager();
+          break;
+        case 'messaging':
+          renderChatHub();
+          break;
+        case 'notices':
+          renderNoticesTable(cachedEvents);
+          document.getElementById('marks-tbody').innerHTML = (data.marks || []).map(mk => `
+          <tr>
+            <td><strong>${mk.student_name}</strong></td>
+            <td>${mk.test_name}</td>
+            <td>${mk.subject}</td>
+            <td><strong style="color:var(--accent-orange);">${mk.score}</strong> / ${mk.total_marks}</td>
+            <td><button class="btn-action btn-delete" onclick="promptDeleteMark(${mk.id})">Delete</button></td>
+          </tr>
+        `).join('');
+          break;
+        case 'materials':
+          document.getElementById('materials-tbody').innerHTML = (data.materials || []).map(mat => `
+          <tr>
+            <td><strong>${mat.title}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${mat.subject}</div></td>
+            <td><span style="color:var(--accent-orange); font-weight:700;">${mat.standard}</span></td>
+            <td>${mat.has_pdf ? '📄 PDF Document' : '🔗 Web Link'}</td>
+            <td><button class="btn-action btn-delete" onclick="promptDeleteMaterial(${mat.id})">Delete</button></td>
+          </tr>
+        `).join('');
+          break;
+        case 'gallery':
+          renderAdminGallery();
+          break;
+        case 'teachers':
+          renderAdminTeachers();
+          break;
+      }
+    }
+
     function switchTab(tabId, btnElement = null) {
+      currentTab = tabId;
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-      
-      const targetTab = document.getElementById('tab-' + tabId);
-      if(targetTab) targetTab.classList.add('active');
 
-      if (btnElement) {
-        btnElement.classList.add('active');
-        btnElement.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      } else {
-        const foundBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-        if (foundBtn) {
-          foundBtn.classList.add('active');
-          foundBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }
+      const targetTab = document.getElementById('tab-' + tabId);
+      if (targetTab) targetTab.classList.add('active');
+
+      const btn = btnElement || document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      if (btn) {
+        btn.classList.add('active');
+        // keep the active tab visible inside the swipeable nav on mobile
+        if (btn.scrollIntoView) btn.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
       }
 
       if (tabId === 'attendance') {
         loadAttendanceList();
+      } else {
+        renderTab(tabId);
       }
     }
 
-    async function fetchAdminData() {
-      if (isFetching) return;
-      isFetching = true;
+    function fetchAdminData(isPoll = false) {
+      if (inFlight) return isPoll ? inFlight : inFlight.then(() => fetchAdminData(false));
+      inFlight = doFetchAdminData(isPoll).finally(() => { inFlight = null; });
+      return inFlight;
+    }
 
+    async function doFetchAdminData(isPoll) {
       try {
         const res = await fetch('/api/admin/data', { headers: { 'Authorization': `Bearer ${token}` } });
         if(res.status === 401 || res.status === 403) {
@@ -1135,7 +1351,22 @@
           location.href = 'index.html';
           return;
         }
-        const data = await res.json();
+        const text = await res.text();
+
+        // nothing changed on the server -> skip all rendering work
+        if (text === lastPayload) return;
+
+        // background refresh waits while the user is scrolling/swiping (zero jank)
+        if (isPoll) {
+          let waits = 0;
+          while (Date.now() - lastScrollTs < 500 && waits++ < 8) await sleep(250);
+        }
+
+        const data = JSON.parse(text);
+        lastPayload = text;
+        lastData = data;
+        dataVersion++;
+
         cachedStudents = data.users || [];
         cachedMessages = data.messages || [];
         cachedStandardFees = data.standard_fees || [];
@@ -1144,7 +1375,7 @@
         cachedTeachers = data.teachers || [];
         cachedSettings = data.settings || {};
         cachedEvents = data.events || [];
-        
+
         document.getElementById('stat-students').innerText = cachedStudents.length;
         document.getElementById('stat-paid').innerText = cachedStudents.filter(s => s.fee_status === 'Paid').length;
         document.getElementById('stat-leads').innerText = (data.inquiries || []).length;
@@ -1168,84 +1399,77 @@
         }
 
         populateStandardDropdowns();
-        
-        const chatSelect = document.getElementById('new-chat-student-select');
-        if (chatSelect && chatSelect.children.length <= 1) {
-          chatSelect.innerHTML = `<option value="">+ Choose Student</option>` + cachedStudents.map(s => `<option value="${s.id}">${s.name} (${s.standard})</option>`).join('');
+
+        // student dropdown for new chat: rebuild only if the student list really changed
+        const selectKey = cachedStudents.map(s => `${s.id}|${s.name}|${s.standard}`).join(';');
+        if (selectKey !== lastStudentSelectKey) {
+          lastStudentSelectKey = selectKey;
+          document.getElementById('new-chat-student-select').innerHTML = `<option value="">+ Choose Student</option>` + cachedStudents.map(s => `<option value="${s.id}">${s.name} (${s.standard})</option>`).join('');
         }
-        
+
         if (!document.getElementById('att-select-date').value) {
           document.getElementById('att-select-date').value = new Date().toISOString().split('T')[0];
         }
 
-        renderStandardChips();
-        renderStudentsTable();
-        renderFeesManager();
-        renderBatchTimings();
-        renderChatHub();
-        renderInquiriesTable(data.inquiries || []);
-        renderNoticesTable(cachedEvents);
-        renderAdminGallery();
-        renderAdminTeachers();
-
-        // Marks Table
-        document.getElementById('marks-tbody').innerHTML = (data.marks || []).map(mk => `
-          <tr>
-            <td><strong>${mk.student_name}</strong></td>
-            <td>${mk.test_name}</td>
-            <td>${mk.subject}</td>
-            <td><strong style="color:var(--accent-orange);">${mk.score}</strong> / ${mk.total_marks}</td>
-            <td><button class="btn-action btn-delete" onclick="promptDeleteMark(${mk.id})">Delete</button></td>
-          </tr>
-        `).join('');
-
-        // Materials Table
-        document.getElementById('materials-tbody').innerHTML = (data.materials || []).map(mat => `
-          <tr>
-            <td><strong>${mat.title}</strong><div style="font-size:0.72rem; color:var(--text-muted);">${mat.subject}</div></td>
-            <td><span style="color:var(--accent-orange); font-weight:700;">${mat.standard}</span></td>
-            <td>${mat.has_pdf ? '📄 PDF' : '🔗 Link'}</td>
-            <td><button class="btn-action btn-delete" onclick="promptDeleteMaterial(${mat.id})">Delete</button></td>
-          </tr>
-        `).join('');
-
-        runAnalyticsQuery();
+        // render only what the admin is looking at right now
+        await new Promise(r => requestAnimationFrame(r));
+        if (currentTab !== 'attendance') renderTab(currentTab);
 
       } catch(e) {
         console.error(e);
-      } finally {
-        isFetching = false;
       }
     }
-    fetchAdminData();
+
+    // First load (Chart.js is deferred, so wait for the page scripts to be ready)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => fetchAdminData());
+    } else {
+      fetchAdminData();
+    }
 
     function populateStandardDropdowns() {
       const stdOpts = ALL_STANDARDS.map(std => `<option value="${std}">${std}</option>`).join('');
       
       const bulkSelect = document.getElementById('bulk-marks-std');
-      if (bulkSelect && bulkSelect.children.length <= 1) bulkSelect.innerHTML = `<option value="">-- Choose Standard --</option>` + stdOpts;
+      if (bulkSelect && bulkSelect.children.length <= 1) {
+        bulkSelect.innerHTML = `<option value="">-- Choose Standard --</option>` + stdOpts;
+      }
 
       const attSelect = document.getElementById('att-select-std');
-      if (attSelect && attSelect.children.length === 0) attSelect.innerHTML = stdOpts;
+      if (attSelect && attSelect.children.length === 0) {
+        attSelect.innerHTML = stdOpts;
+      }
 
       const matSelect = document.getElementById('mat-std');
-      if (matSelect && matSelect.children.length <= 2) matSelect.innerHTML = `<option value="All Standards" style="font-weight:700; color:var(--accent-orange);">🌟 All Standards (Everyone)</option>` + stdOpts;
+      if (matSelect && matSelect.children.length <= 2) {
+        matSelect.innerHTML = `<option value="All Standards" style="font-weight:700; color:var(--accent-orange);">🌟 All Standards (Everyone)</option>` + stdOpts;
+      }
 
       const editStd = document.getElementById('edit-std');
-      if (editStd && editStd.children.length === 0) editStd.innerHTML = stdOpts;
+      if (editStd && editStd.children.length === 0) {
+        editStd.innerHTML = stdOpts;
+      }
 
       const promoteStd = document.getElementById('promote-next-std');
-      if (promoteStd && promoteStd.children.length === 0) promoteStd.innerHTML = stdOpts;
+      if (promoteStd && promoteStd.children.length === 0) {
+        promoteStd.innerHTML = stdOpts;
+      }
 
       const anStd = document.getElementById('analytics-std-filter');
-      if (anStd && anStd.children.length === 0) anStd.innerHTML = `<option value="ALL">All Standards</option>` + stdOpts;
+      if (anStd && anStd.children.length === 0) {
+        anStd.innerHTML = `<option value="ALL">All Standards</option>` + stdOpts;
+      }
 
-      if(!document.getElementById('gal-date').value) document.getElementById('gal-date').value = new Date().toISOString().split('T')[0];
-      if(!document.getElementById('ev-date').value) document.getElementById('ev-date').value = new Date().toISOString().split('T')[0];
+      if(!document.getElementById('gal-date').value) {
+        document.getElementById('gal-date').value = new Date().toISOString().split('T')[0];
+      }
+      if(!document.getElementById('ev-date').value) {
+        document.getElementById('ev-date').value = new Date().toISOString().split('T')[0];
+      }
     }
 
     // ========================================================
-    // NOTICES TABLE & ACTIONS
+    // NOTICES TABLE RENDERING & DELETION
     // ========================================================
     function renderNoticesTable(events) {
       const tbody = document.getElementById('notices-tbody');
@@ -1254,7 +1478,7 @@
 
       if (!tbody) return;
       if (!events || events.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.2rem; color:var(--text-muted);">No notices published yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No notices published yet.</td></tr>`;
         return;
       }
 
@@ -1262,8 +1486,8 @@
         <tr>
           <td><strong style="color:#fff;">${ev.title}</strong></td>
           <td><span class="badge" style="background:rgba(232, 89, 12, 0.15); color:var(--accent-orange);">${ev.category || 'Notice'}</span></td>
-          <td><span style="font-size:0.78rem; color:var(--text-muted);">${ev.date}</span></td>
-          <td><div style="font-size:0.78rem; color:var(--text-muted); max-width:240px; line-height:1.3;">${ev.description || '-'}</div></td>
+          <td><span style="font-size:0.82rem; color:var(--text-muted);">${ev.date}</span></td>
+          <td><div style="font-size:0.82rem; color:var(--text-muted); max-width:280px; line-height:1.4;">${ev.description || '-'}</div></td>
           <td>
             <button class="btn-action btn-delete" onclick="promptDeleteEvent(${ev.id})">
               Delete
@@ -1337,7 +1561,7 @@
       const sDate = document.getElementById('analytics-start-date').value;
       const eDate = document.getElementById('analytics-end-date').value;
       if (!sDate || !eDate) {
-        showToast('Select Start and End Date', 'error');
+        showToast('Please select both Start Date and End Date', 'error');
         return;
       }
       document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
@@ -1389,18 +1613,20 @@
       const statsList = Object.values(stdMap);
       const grandPending = Math.max(0, grandExpected - grandCollected);
 
+      // KPI Numbers
       document.getElementById('analytics-total-expected').innerText = `₹${grandExpected.toLocaleString()}`;
       document.getElementById('chart-collected').innerText = `₹${grandCollected.toLocaleString()}`;
       document.getElementById('chart-pending').innerText = `₹${grandPending.toLocaleString()}`;
 
+      // Table
       const tbody = document.getElementById('analytics-details-tbody');
       if (statsList.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.2rem; color:var(--text-muted);">No enrolled students found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.5rem; color:var(--text-muted);">No enrolled students found for this selection.</td></tr>`;
       } else {
         tbody.innerHTML = statsList.map(item => `
           <tr>
             <td><strong style="color:var(--accent-orange);">${item.standard}</strong></td>
-            <td><strong>${item.student_count}</strong></td>
+            <td><strong>${item.student_count}</strong> Students</td>
             <td>₹${item.fee_per_student.toLocaleString()}</td>
             <td><strong style="color:#fff;">₹${item.total_expected.toLocaleString()}</strong></td>
             <td style="color:var(--success); font-weight:700;">₹${item.total_collected.toLocaleString()}</td>
@@ -1409,7 +1635,9 @@
         `).join('');
       }
 
-      // Chart 1: Donut
+      if (typeof Chart === 'undefined') return; // Chart.js still loading / offline
+
+      // Chart 1: Donut Ratio
       const donutData = (grandCollected === 0 && grandPending === 0) ? [1, 0] : [grandCollected, grandPending];
       const donutColors = (grandCollected === 0 && grandPending === 0) ? ['#333', '#444'] : ['#2ed573', '#ff4757'];
 
@@ -1421,12 +1649,20 @@
         const ctxDonut = document.getElementById('revenuePieChart').getContext('2d');
         revenueDonutInstance = new Chart(ctxDonut, {
           type: 'doughnut',
-          data: { labels: ['Paid', 'Pending'], datasets: [{ data: donutData, backgroundColor: donutColors, borderWidth: 0 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '72%' }
+          data: {
+            labels: ['Collected (Paid)', 'Pending (Due)'],
+            datasets: [{ data: donutData, backgroundColor: donutColors, borderWidth: 0 }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            cutout: '72%'
+          }
         });
       }
 
-      // Chart 2: Bar
+      // Chart 2: Bar Chart
       const barLabels = statsList.map(s => s.standard.replace(' Standard', 'th').replace(' (Board)', ''));
       const barExpected = statsList.map(s => s.total_expected);
       const barCollected = statsList.map(s => s.total_collected);
@@ -1443,29 +1679,31 @@
           data: {
             labels: barLabels.length > 0 ? barLabels : ['No Students'],
             datasets: [
-              { label: 'Expected', data: barExpected, backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 4 },
-              { label: 'Collected', data: barCollected, backgroundColor: '#e8590c', borderRadius: 4 }
+              { label: 'Expected Total', data: barExpected.length > 0 ? barExpected : [0], backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 6 },
+              { label: 'Collected Paid', data: barCollected.length > 0 ? barCollected : [0], backgroundColor: '#e8590c', borderRadius: 6 }
             ]
           },
           options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { labels: { color: '#848995', boxWidth: 10 } } },
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#848995', boxWidth: 12 } } },
             scales: {
-              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#848995', font: { size: 9 } } },
-              x: { grid: { display: false }, ticks: { color: '#848995', font: { size: 9 } } }
+              y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#848995' } },
+              x: { grid: { display: false }, ticks: { color: '#848995', font: { size: 10 } } }
             }
           }
         });
       }
 
-      // Chart 3: Pie
+      // Chart 3: Pie Chart
       const pieLabels = statsList.map(s => s.standard.replace(' Standard', 'th').replace(' (Board)', ''));
       const pieCounts = statsList.map(s => s.student_count);
-      const pieColors = ['#e8590c', '#2ed573', '#1e90ff', '#9b59b6', '#f39c12', '#1abc9c', '#e74c3c'];
+      const pieColors = ['#e8590c', '#2ed573', '#1e90ff', '#9b59b6', '#f39c12', '#1abc9c', '#e74c3c', '#ff6b81', '#70a1ff', '#2ed573'];
 
       if (studentsPieInstance) {
         studentsPieInstance.data.labels = pieLabels.length > 0 ? pieLabels : ['No Students'];
         studentsPieInstance.data.datasets[0].data = pieCounts.length > 0 ? pieCounts : [1];
+        studentsPieInstance.data.datasets[0].backgroundColor = pieColors.slice(0, Math.max(1, pieLabels.length));
         studentsPieInstance.update('none');
       } else {
         const ctxPie = document.getElementById('studentsPieChart').getContext('2d');
@@ -1473,9 +1711,17 @@
           type: 'pie',
           data: {
             labels: pieLabels.length > 0 ? pieLabels : ['No Students'],
-            datasets: [{ data: pieCounts.length > 0 ? pieCounts : [1], backgroundColor: pieColors.slice(0, Math.max(1, pieLabels.length)), borderWidth: 0 }]
+            datasets: [{
+              data: pieCounts.length > 0 ? pieCounts : [1],
+              backgroundColor: pieColors.slice(0, Math.max(1, pieLabels.length)),
+              borderWidth: 0
+            }]
           },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+          }
         });
       }
     }
@@ -1483,9 +1729,14 @@
     // BACKUP DOWNLOAD
     async function downloadBackupDatabase() {
       try {
-        showToast('Preparing backup...');
-        const res = await fetch('/api/admin/backup/download', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) { showToast('Backup download failed.', 'error'); return; }
+        showToast('Preparing backup database export...');
+        const res = await fetch('/api/admin/backup/download', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          showToast('Backup download failed.', 'error');
+          return;
+        }
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1495,18 +1746,23 @@
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        showToast('Database backup downloaded!');
+        showToast('Database backup downloaded successfully!');
       } catch(e) {
-        showToast('Download error', 'error');
+        showToast('Download error: ' + e.message, 'error');
       }
     }
 
     // EXPORT CSV
     async function exportStudentsCsv() {
       try {
-        showToast('Preparing CSV...');
-        const res = await fetch('/api/admin/export/students', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) { showToast('Export failed.', 'error'); return; }
+        showToast('Preparing Excel (CSV) report...');
+        const res = await fetch('/api/admin/export/students', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          showToast('Export failed.', 'error');
+          return;
+        }
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1516,35 +1772,45 @@
         a.click();
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
-        showToast('CSV downloaded!');
+        showToast('Students report (CSV) downloaded successfully!');
       } catch(e) {
-        showToast('Download error', 'error');
+        showToast('Download error, please try again.', 'error');
       }
     }
 
     function formatIndianTime(rawTime) {
       if (!rawTime) return '';
-      if (rawTime.includes('/') && (rawTime.includes('am') || rawTime.includes('pm') || rawTime.includes('AM') || rawTime.includes('PM'))) return rawTime;
+      if (rawTime.includes('/') && (rawTime.includes('am') || rawTime.includes('pm') || rawTime.includes('AM') || rawTime.includes('PM'))) {
+        return rawTime;
+      }
       const d = new Date(rawTime.includes('T') ? rawTime : rawTime.replace(' ', 'T') + 'Z');
       if (isNaN(d.getTime())) return rawTime;
-      return d.toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+      return d.toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true
+      });
     }
 
     // 1-ON-1 CHAT HUB
     function renderChatHub() {
       const threadContainer = document.getElementById('chat-thread-list');
-      const activeChatStudents = cachedStudents.filter(s => cachedMessages.some(m => Number(m.student_id) === Number(s.id)));
+      
+      const activeChatStudents = cachedStudents.filter(s => {
+        return cachedMessages.some(m => Number(m.student_id) === Number(s.id));
+      });
 
       activeChatStudents.sort((a, b) => {
         const aUnread = cachedMessages.some(m => Number(m.student_id) === Number(a.id) && m.sender === 'student' && Number(m.is_read) === 0);
         const bUnread = cachedMessages.some(m => Number(m.student_id) === Number(b.id) && m.sender === 'student' && Number(m.is_read) === 0);
-        return bUnread - aUnread;
+        if (aUnread && !bUnread) return -1;
+        if (!aUnread && bUnread) return 1;
+        return 0;
       });
 
       document.getElementById('chat-count-pill').innerText = `${activeChatStudents.length} active`;
 
       if (activeChatStudents.length === 0) {
-        threadContainer.innerHTML = `<div style="padding:1rem; color:var(--text-muted); font-size:0.8rem; text-align:center;">No conversations yet.</div>`;
+        threadContainer.innerHTML = `<div style="padding:1.5rem; color:var(--text-muted); font-size:0.85rem; text-align:center;">No conversations yet. Choose a student from the dropdown above to start a chat!</div>`;
         return;
       }
 
@@ -1558,15 +1824,17 @@
           <div class="chat-user-card ${isActive}" onclick="openStudentChat(${s.id})">
             <div class="u-name">
               <span>${s.name}</span>
-              ${hasUnread ? '<span class="unread-star-badge">● NEW</span>' : ''}
+              ${hasUnread ? '<span class="unread-star-badge">● * NEW</span>' : ''}
             </div>
             <div class="u-std">${s.standard}</div>
-            <div class="u-preview">${lastMsg ? (lastMsg.sender === 'admin' ? 'You: ' : '') + lastMsg.message : 'No messages'}</div>
+            <div class="u-preview">${lastMsg ? (lastMsg.sender === 'admin' ? 'You: ' : '') + lastMsg.message : 'No messages yet...'}</div>
           </div>
         `;
       }).join('');
 
-      if (activeChatStudentId) renderActiveChatMessages(false);
+      if (activeChatStudentId) {
+        renderActiveChatMessages(false);
+      }
     }
 
     function startNewChatWith(studentId) {
@@ -1598,17 +1866,22 @@
 
     function renderActiveChatMessages(forceScroll = false) {
       const historyBox = document.getElementById('active-chat-history');
-      const isAlreadyNearBottom = historyBox.scrollHeight - historyBox.clientHeight - historyBox.scrollTop < 60;
+      const isAlreadyNearBottom = historyBox.scrollHeight - historyBox.clientHeight - historyBox.scrollTop < 80;
+
       const threadMsgs = cachedMessages.filter(m => Number(m.student_id) === activeChatStudentId).reverse();
 
       if (threadMsgs.length === 0) {
-        historyBox.innerHTML = `<div style="text-align:center; color:var(--text-muted); margin:auto; font-size:0.82rem;">No messages yet. Send below!</div>`;
+        historyBox.innerHTML = `
+          <div style="text-align:center; color:var(--text-muted); margin:auto; font-size:0.85rem;">
+            No conversation yet with this student. Send the first message below!
+          </div>
+        `;
         return;
       }
 
       historyBox.innerHTML = threadMsgs.map(m => `
         <div class="chat-bubble ${m.sender === 'admin' ? 'admin' : 'student'}">
-          <div style="font-size:0.68rem; color:var(--text-muted); margin-bottom:2px; font-weight:700;">
+          <div style="font-size:0.7rem; color:var(--text-muted); margin-bottom:2px; font-weight:700;">
             ${m.sender === 'admin' ? 'You (Admin)' : m.student_name}
           </div>
           <div>${m.message}</div>
@@ -1638,13 +1911,41 @@
         await fetchAdminData();
         renderActiveChatMessages(true);
       } else {
-        showToast('Failed to send', 'error');
+        showToast('Failed to send message', 'error');
       }
     }
 
     document.getElementById('hub-reply-msg').addEventListener('keypress', (e) => {
       if (e.key === 'Enter') sendHubReply();
     });
+
+    // Resize + compress an image file on the device (keeps uploads light on mobile data)
+    function compressImageFile(file, maxDim = 900, quality = 0.82) {
+      const readRaw = () => new Promise((resolve) => {
+        const r = new FileReader();
+        r.onload = (e) => resolve(e.target.result);
+        r.readAsDataURL(file);
+      });
+      return new Promise(async (resolve) => {
+        try {
+          const raw = await readRaw();
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+              const w = Math.round(img.width * ratio), h = Math.round(img.height * ratio);
+              const canvas = document.createElement('canvas');
+              canvas.width = w; canvas.height = h;
+              canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+              const out = canvas.toDataURL('image/jpeg', quality);
+              resolve(out.length < raw.length ? out : raw);
+            } catch (err) { resolve(raw); }
+          };
+          img.onerror = () => resolve(raw);
+          img.src = raw;
+        } catch (e) { resolve(readRaw()); }
+      });
+    }
 
     // TEACHERS MANAGEMENT
     function previewTeacherImage(input) {
@@ -1665,28 +1966,21 @@
       const qualification = document.getElementById('t-qual').value.trim();
       const desc = document.getElementById('t-desc').value.trim();
       const fileInput = document.getElementById('t-file');
-      const urlInput = document.getElementById('t-url').value.trim();
 
       let photo_data = '';
 
       if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        photo_data = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      } else if (urlInput) {
-        photo_data = urlInput;
+        // phone photos are resized first so the upload stays fast & small
+        photo_data = await compressImageFile(fileInput.files[0], 900, 0.82);
       }
 
       if (!name || !subject || !experience || !photo_data) {
-        showToast('Enter Name, Subject, Exp, and Photo', 'error');
+        showToast('Please enter Name, Subject, Experience and upload a Photo', 'error');
         return;
       }
 
       const btn = document.getElementById('btn-add-teacher');
-      btn.innerText = 'SAVING...';
+      btn.innerText = 'SAVING FACULTY PROFILE...';
       btn.disabled = true;
 
       try {
@@ -1695,27 +1989,28 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ name, subject, experience, qualification, photo_data, description: desc })
         });
-        btn.innerText = 'PUBLISH PROFILE →';
+        const data = await res.json();
+        
+        btn.innerText = 'PUBLISH TEACHER PROFILE →';
         btn.disabled = false;
 
         if (res.ok) {
-          showToast('Teacher added successfully!');
+          showToast(data.message || 'Teacher added successfully!');
           document.getElementById('t-name').value = '';
           document.getElementById('t-subject').value = '';
           document.getElementById('t-exp').value = '';
           document.getElementById('t-qual').value = '';
           document.getElementById('t-desc').value = '';
-          document.getElementById('t-url').value = '';
           document.getElementById('t-file').value = '';
           document.getElementById('t-preview-box').style.display = 'none';
           fetchAdminData();
         } else {
-          showToast('Failed to add teacher', 'error');
+          showToast(data.error || 'Failed to add teacher profile', 'error');
         }
       } catch(e) {
-        btn.innerText = 'PUBLISH PROFILE →';
+        btn.innerText = 'PUBLISH TEACHER PROFILE →';
         btn.disabled = false;
-        showToast('Server error', 'error');
+        showToast('Server error, please try again.', 'error');
       }
     }
 
@@ -1724,22 +2019,23 @@
       document.getElementById('teacher-count-badge').innerText = `${cachedTeachers.length} Faculty`;
 
       if (cachedTeachers.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem; padding:1rem; text-align:center;">No faculty profiles added yet.</p>`;
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem; padding:1.5rem; text-align:center;">No faculty profiles added yet.</p>`;
         return;
       }
 
       container.innerHTML = cachedTeachers.map(t => `
         <div class="admin-photo-card">
-          <img src="${t.photo_data}" alt="${t.name}" class="admin-photo-thumb" loading="lazy" />
+          <img src="${t.photo_data}" alt="${t.name}" loading="lazy" decoding="async" class="admin-photo-thumb" />
           <div class="admin-photo-info">
-            <strong style="font-size:0.92rem; color:#fff; display:block;">${t.name}</strong>
-            <div style="font-size:0.72rem; color:var(--accent-orange); font-weight:700;">${t.subject}</div>
-            <div style="display:flex; gap:4px; margin:4px 0; flex-wrap:wrap;">
-              <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.68rem;">${t.experience}</span>
-              ${t.qualification ? `<span class="badge" style="background:rgba(46,213,115,0.15); color:var(--success); font-size:0.68rem;">${t.qualification}</span>` : ''}
+            <strong style="font-size:1rem; color:#fff; display:block; margin-bottom:2px;">${t.name}</strong>
+            <div style="font-size:0.75rem; color:var(--accent-orange); font-weight:700;">${t.subject}</div>
+            <div style="display:flex; gap:6px; margin:6px 0; flex-wrap:wrap;">
+              <span class="badge" style="background:rgba(255,255,255,0.06); font-size:0.7rem;">${t.experience}</span>
+              ${t.qualification ? `<span class="badge" style="background:rgba(46,213,115,0.15); color:var(--success); font-size:0.7rem;">${t.qualification}</span>` : ''}
             </div>
-            <button class="btn-action btn-delete" style="width:100%; justify-content:center; padding:5px; margin-top:4px;" onclick="promptDeleteTeacher(${t.id})">
-              Delete
+            <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">${t.description || 'Dedicated faculty member.'}</p>
+            <button class="btn-action btn-delete" style="width:100%; justify-content:center; padding:6px;" onclick="promptDeleteTeacher(${t.id})">
+              Delete Profile
             </button>
           </div>
         </div>
@@ -1747,9 +2043,9 @@
     }
 
     function promptDeleteTeacher(id) {
-      openConfirmModal('Delete Profile', 'Are you sure you want to remove this faculty profile?', async () => {
+      openConfirmModal('Delete Faculty Profile', 'Are you sure you want to remove this faculty profile from the website?', async () => {
         await fetch(`/api/admin/teachers/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Faculty removed.');
+        showToast('Faculty profile removed successfully.');
         fetchAdminData();
       });
     }
@@ -1779,15 +2075,16 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ instagram_link: insta, facebook_link: fb, whatsapp_number: wa, youtube_link: yt })
         });
+        const data = await res.json();
         if(res.ok) {
-          showToast('Settings saved!');
+          showToast(data.message || 'Settings saved successfully!');
           closeSettingsModal();
           fetchAdminData();
         } else {
           showToast('Failed to save settings', 'error');
         }
       } catch(e) {
-        showToast('Network error', 'error');
+        showToast('Network error, please try again.', 'error');
       }
     }
 
@@ -1824,12 +2121,13 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ to_standard: nextStd, academic_year: sessionYear })
         });
+        const data = await res.json();
         if(res.ok) {
-          showToast('Student promoted successfully!');
+          showToast(data.message || 'Student promoted successfully!');
           closePromoteModal();
           fetchAdminData();
         } else {
-          showToast('Promotion error', 'error');
+          showToast(data.error || 'Promotion error', 'error');
         }
       } catch(e) {
         showToast('Network error, please try again.', 'error');
@@ -1869,12 +2167,12 @@
       }
 
       if (!title || !image_data || !date) {
-        showToast('Provide Title, Image, and Date', 'error');
+        showToast('Please provide Title, Image (File or URL), and Date', 'error');
         return;
       }
 
       const btn = document.getElementById('btn-upload-gal');
-      btn.innerText = 'UPLOADING...';
+      btn.innerText = 'UPLOADING PHOTO...';
       btn.disabled = true;
 
       try {
@@ -1883,11 +2181,13 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ title, image_data, description: desc, date })
         });
-        btn.innerText = 'PUBLISH TO GALLERY →';
+        const data = await res.json();
+        
+        btn.innerText = 'PUBLISH TO WEBSITE GALLERY →';
         btn.disabled = false;
 
         if (res.ok) {
-          showToast('Photo added to gallery!');
+          showToast(data.message || 'Photo added to website gallery!');
           document.getElementById('gal-title').value = '';
           document.getElementById('gal-desc').value = '';
           document.getElementById('gal-url').value = '';
@@ -1895,10 +2195,10 @@
           document.getElementById('gal-preview-box').style.display = 'none';
           fetchAdminData();
         } else {
-          showToast('Failed to upload photo', 'error');
+          showToast(data.error || 'Failed to upload photo', 'error');
         }
       } catch(e) {
-        btn.innerText = 'PUBLISH TO GALLERY →';
+        btn.innerText = 'PUBLISH TO WEBSITE GALLERY →';
         btn.disabled = false;
         showToast('Server connection error', 'error');
       }
@@ -1909,18 +2209,21 @@
       document.getElementById('gal-count-badge').innerText = `${cachedGallery.length} Photos`;
 
       if (cachedGallery.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.8rem; padding:1rem; text-align:center;">No photos uploaded yet.</p>`;
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem; padding:1.5rem; text-align:center;">No photos uploaded yet.</p>`;
         return;
       }
 
       container.innerHTML = cachedGallery.map(g => `
         <div class="admin-photo-card">
-          <img src="${g.image_data}" alt="${g.title}" class="admin-photo-thumb" loading="lazy" />
+          <img src="${g.image_data}" alt="${g.title}" loading="lazy" decoding="async" class="admin-photo-thumb" />
           <div class="admin-photo-info">
-            <strong style="font-size:0.88rem; color:#fff; display:block;">${g.title}</strong>
-            <span style="font-size:0.68rem; color:var(--accent-orange); font-weight:700;">${g.date}</span>
-            <button class="btn-action btn-delete" style="width:100%; justify-content:center; padding:5px; margin-top:6px;" onclick="promptDeleteGalleryPhoto(${g.id})">
-              Delete
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+              <strong style="font-size:0.92rem; color:#fff;">${g.title}</strong>
+              <span style="font-size:0.7rem; color:var(--accent-orange); font-weight:700;">${g.date}</span>
+            </div>
+            <p style="font-size:0.78rem; color:var(--text-muted); line-height:1.4; margin-bottom:10px;">${g.description || 'No description'}</p>
+            <button class="btn-action btn-delete" style="width:100%; justify-content:center; padding:6px;" onclick="promptDeleteGalleryPhoto(${g.id})">
+              Delete Photo
             </button>
           </div>
         </div>
@@ -1928,9 +2231,9 @@
     }
 
     function promptDeleteGalleryPhoto(id) {
-      openConfirmModal('Delete Photo', 'Are you sure you want to delete this photo from the gallery?', async () => {
+      openConfirmModal('Delete Gallery Photo', 'Are you sure you want to delete this photo from the gallery?', async () => {
         await fetch(`/api/admin/gallery/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Photo removed.');
+        showToast('Photo removed from gallery successfully.');
         fetchAdminData();
       });
     }
@@ -1968,8 +2271,9 @@
           <tr>
             <td><strong>#${s.id}</strong></td>
             <td><strong>${s.name}</strong></td>
+            <td><span style="color:var(--accent-orange); font-weight:700;">${s.standard}</span></td>
             <td>
-              <input type="number" id="bulk-score-${s.id}" placeholder="0" min="0" max="100" style="padding:0.35rem 0.5rem; width:75px; text-align:center; font-weight:800; color:var(--accent-orange);" />
+              <input type="number" id="bulk-score-${s.id}" placeholder="0" min="0" max="100" style="padding:0.4rem 0.6rem; width:90px; text-align:center; font-weight:800; color:var(--accent-orange);" />
             </td>
           </tr>
         `).join('');
@@ -1986,12 +2290,12 @@
       const total_marks = Number(document.getElementById('bulk-marks-total').value) || 50;
 
       if (!standard || !test_name || !subject) {
-        showToast('Enter Test Name and Subject', 'error');
+        showToast('Please enter Test Name and Subject', 'error');
         return;
       }
 
       if (currentBulkMarksStudents.length === 0) {
-        showToast('No students to submit marks for', 'error');
+        showToast('No students found to submit marks for', 'error');
         return;
       }
 
@@ -2009,18 +2313,19 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ standard, test_name, subject, total_marks, scores })
         });
+        const data = await res.json();
 
         if (res.ok) {
-          showToast('Marks uploaded successfully!');
+          showToast(data.message || 'Marks uploaded successfully!');
           document.getElementById('bulk-marks-test-name').value = '';
           document.getElementById('bulk-marks-subject').value = '';
           loadStudentsForBulkMarks();
           fetchAdminData();
         } else {
-          showToast('Failed to submit marks', 'error');
+          showToast(data.error || 'Failed to submit marks', 'error');
         }
       } catch(e) {
-        showToast('Network error', 'error');
+        showToast('Network error, please try again', 'error');
       }
     }
 
@@ -2031,13 +2336,13 @@
 
       const cleanPhone = (s.phone || '').replace(/\D/g, '').slice(-10);
       if(!cleanPhone || cleanPhone.length !== 10) {
-        showToast('Valid 10-digit number not found', 'error');
+        showToast('Valid 10-digit phone number not found for this student', 'error');
         return;
       }
 
       document.getElementById('wa-phone').value = cleanPhone;
       document.getElementById('wa-student-name').value = s.name;
-      document.getElementById('wa-modal-subtitle').innerText = `To: ${s.name} • ${cleanPhone}`;
+      document.getElementById('wa-modal-subtitle').innerText = `To: ${s.name} (${s.standard}) • ${cleanPhone}`;
       document.getElementById('wa-template-select').value = 'fee';
       
       updateWhatsAppMessagePreview();
@@ -2057,11 +2362,11 @@
         previewBox.value = `Hello Parent/Student,\nThis is a friendly reminder from Shape & Shine Coaching Class, Udhana regarding the tuition fee installment for ${sName}. Kindly clear the due payment at your earliest.\nThank you!\nContact: 098245 28709`;
       } else if (type === 'absent') {
         const today = new Date().toISOString().split('T')[0];
-        previewBox.value = `Dear Parent,\nThis is an attendance alert from Shape & Shine Coaching Class. Your child ${sName} was marked ABSENT today (${today}) in regular lectures. Please contact us: 098245 28709`;
+        previewBox.value = `Dear Parent,\nThis is an attendance alert from Shape & Shine Coaching Class. Your child ${sName} was marked ABSENT today (${today}) in regular lectures. Please contact us for details: 098245 28709`;
       } else if (type === 'result') {
-        previewBox.value = `Dear Parent,\nNew weekly test marks for ${sName} have been published on the Shape & Shine Coaching Student Portal. Please login to review progress.\nShape & Shine Coaching Class`;
+        previewBox.value = `Dear Parent,\nNew weekly test marks for ${sName} have been published on the Shape & Shine Coaching Student Portal. Please login to review their performance and progress.\nShape & Shine Coaching Class`;
       } else {
-        previewBox.value = `Hello ${sName},\nMessage from Shape & Shine Coaching Class:\n\n[Type message here]`;
+        previewBox.value = `Hello ${sName},\nMessage from Shape & Shine Coaching Class management:\n\n[Type your personal notice here]`;
       }
     }
 
@@ -2071,6 +2376,7 @@
       const url = `https://wa.me/91${phone}?text=${msg}`;
       window.open(url, '_blank');
       closeWhatsAppModal();
+      showToast('Opening WhatsApp...');
     }
 
     // STRICT FEE RECEIPT SYSTEM
@@ -2083,7 +2389,7 @@
       const balance = Math.max(0, total - paid);
 
       if (balance <= 0) {
-        showToast(`Fees already cleared (₹${total.toLocaleString()})! Balance is ₹0.`, 'error');
+        showToast(`Full fees (₹${total.toLocaleString()}) have already been cleared for ${s.name}! Remaining balance is ₹0.`, 'error');
         return;
       }
 
@@ -2091,14 +2397,14 @@
       document.getElementById('rec-student-name').value = `${s.name} (${s.standard})`;
       
       document.getElementById('rec-balance-info').innerHTML = `
-        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-          <span>Total Fee:</span><strong>₹${total.toLocaleString()}</strong>
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+          <span>Course Tuition Fee:</span><strong>₹${total.toLocaleString()}</strong>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
           <span>Paid Till Date:</span><strong style="color:var(--success);">₹${paid.toLocaleString()}</strong>
         </div>
-        <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.08); padding-top:2px;">
-          <span style="color:var(--danger); font-weight:700;">Remaining Due:</span>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.08); padding-top:4px;">
+          <span style="color:var(--danger); font-weight:700;">Remaining Balance Due:</span>
           <strong style="color:var(--danger);">₹${balance.toLocaleString()}</strong>
         </div>
       `;
@@ -2143,13 +2449,13 @@
       const forMonth = document.getElementById('rec-for-month').value.trim();
 
       if (!amount || amount <= 0) {
-        showToast('Enter valid amount greater than ₹0', 'error');
+        showToast('Please enter a valid payment amount greater than ₹0', 'error');
         return;
       }
 
       const btn = document.getElementById('btn-create-receipt');
       btn.disabled = true;
-      btn.innerText = 'GENERATING...';
+      btn.innerText = 'GENERATING RECEIPT...';
 
       try {
         const res = await fetch('/api/admin/generate-receipt', {
@@ -2164,82 +2470,83 @@
           })
         });
         const data = await res.json();
+        
         btn.disabled = false;
         btn.innerText = 'CREATE & PRINT RECEIPT 🖨️';
 
         if (res.ok) {
-          showToast(data.message || 'Receipt generated!');
+          showToast(data.message || 'Receipt generated successfully!');
           closeReceiptModal();
           await fetchAdminData();
           printReceiptDocument(data.receipt);
         } else {
-          showToast(data.error || 'Receipt error', 'error');
+          showToast(data.error || 'Receipt generation error', 'error');
         }
       } catch(e) {
         btn.disabled = false;
         btn.innerText = 'CREATE & PRINT RECEIPT 🖨️';
-        showToast('Network error', 'error');
+        showToast('Network error, please try again.', 'error');
       }
     }
 
     function printReceiptDocument(rec) {
       const container = document.getElementById('printable-receipt-container');
       container.innerHTML = `
-        <div style="max-width:640px; margin:0 auto; border:2px solid #000; padding:1.5rem; font-family:'Plus Jakarta Sans', sans-serif; background:#fff; color:#000; page-break-inside:avoid;">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:0.7rem; margin-bottom:1rem;">
+        <div style="max-width:650px; margin:0 auto; border:2px solid #000; padding:1.8rem; font-family:'Plus Jakarta Sans', sans-serif; background:#fff; color:#000; page-break-inside:avoid;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #000; padding-bottom:0.8rem; margin-bottom:1.2rem;">
             <div>
-              <h1 style="font-size:1.35rem; margin:0; color:#e8590c; font-weight:900;">SHAPE & SHINE COACHING CLASS</h1>
-              <p style="margin:2px 0; font-size:0.75rem; color:#333;">213, Shivnagar Society, Harinagar-2, Udhana, Surat</p>
-              <p style="margin:1px 0; font-size:0.75rem; color:#333;">Phone: 098245 28709 | Reg No: SS-2026-ED</p>
+              <h1 style="font-size:1.45rem; margin:0; color:#e8590c; font-weight:900; letter-spacing:-0.5px;">SHAPE & SHINE COACHING CLASS</h1>
+              <p style="margin:3px 0; font-size:0.78rem; color:#333;">213, Shivnagar Society, Harinagar-2, Udhana, Surat, Gujarat 394210</p>
+              <p style="margin:2px 0; font-size:0.78rem; color:#333;">Phone: 098245 28709 | Reg No: SS-2026-ED</p>
             </div>
             <div style="text-align:right;">
-              <h2 style="font-size:0.95rem; margin:0; text-transform:uppercase; color:#000; font-weight:800;">FEE RECEIPT</h2>
-              <p style="font-weight:800; margin:2px 0; font-size:0.9rem; color:#e8590c;">${rec.receipt_no}</p>
-              <p style="margin:1px 0; font-size:0.75rem; color:#555;">Date: ${rec.date}</p>
+              <h2 style="font-size:1.05rem; margin:0; text-transform:uppercase; color:#000; font-weight:800;">OFFICIAL FEE RECEIPT</h2>
+              <p style="font-weight:800; margin:3px 0; font-size:0.95rem; color:#e8590c;">${rec.receipt_no}</p>
+              <p style="margin:2px 0; font-size:0.78rem; color:#555;">Date: ${rec.date}</p>
             </div>
           </div>
 
-          <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; font-size:0.82rem;">
+          <table style="width:100%; border-collapse:collapse; margin-bottom:1.2rem; font-size:0.85rem;">
             <tr>
-              <td style="padding:4px 0; border-bottom:1px solid #e0e0e0; width:50%;"><strong>Student:</strong> ${rec.student_name}</td>
-              <td style="padding:4px 0; border-bottom:1px solid #e0e0e0; width:50%;"><strong>Standard:</strong> ${rec.standard}</td>
+              <td style="padding:6px 0; border-bottom:1px solid #e0e0e0; width:50%;"><strong>Student Name:</strong> ${rec.student_name}</td>
+              <td style="padding:6px 0; border-bottom:1px solid #e0e0e0; width:50%;"><strong>Standard:</strong> ${rec.standard}</td>
             </tr>
             <tr>
-              <td style="padding:4px 0; border-bottom:1px solid #e0e0e0;"><strong>Category:</strong> ${rec.payment_type}${rec.payment_for_month ? ' (' + rec.payment_for_month + ')' : ''}</td>
-              <td style="padding:4px 0; border-bottom:1px solid #e0e0e0;"><strong>Mode:</strong> ${rec.payment_mode}</td>
+              <td style="padding:6px 0; border-bottom:1px solid #e0e0e0;"><strong>Payment Category:</strong> ${rec.payment_type}${rec.payment_for_month ? ' (' + rec.payment_for_month + ')' : ''}</td>
+              <td style="padding:6px 0; border-bottom:1px solid #e0e0e0;"><strong>Payment Mode:</strong> ${rec.payment_mode}</td>
             </tr>
           </table>
 
-          <table style="width:100%; border-collapse:collapse; margin-bottom:1.2rem; border:1px solid #000; font-size:0.82rem;">
+          <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; border:1px solid #000; font-size:0.88rem;">
             <thead>
               <tr style="background:#f2f2f2;">
-                <th style="padding:6px 10px; border:1px solid #000; text-align:left; font-weight:800;">DESCRIPTION</th>
-                <th style="padding:6px 10px; border:1px solid #000; text-align:right; font-weight:800;">AMOUNT (INR)</th>
+                <th style="padding:8px 12px; border:1px solid #000; text-align:left; font-weight:800;">DESCRIPTION</th>
+                <th style="padding:8px 12px; border:1px solid #000; text-align:right; font-weight:800;">AMOUNT (INR)</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td style="padding:6px 10px; border:1px solid #000;">Course Tuition Fee Total</td>
-                <td style="padding:6px 10px; border:1px solid #000; text-align:right;">₹${Number(rec.total_fees).toLocaleString()}</td>
+                <td style="padding:8px 12px; border:1px solid #000;">Course Tuition Fee Total</td>
+                <td style="padding:8px 12px; border:1px solid #000; text-align:right; font-weight:600;">₹${Number(rec.total_fees).toLocaleString()}</td>
               </tr>
               <tr>
-                <td style="padding:6px 10px; border:1px solid #000; font-weight:700;">Amount Paid (This Receipt)</td>
-                <td style="padding:6px 10px; border:1px solid #000; text-align:right; font-weight:800; color:#e8590c;">₹${Number(rec.amount_paid).toLocaleString()}</td>
+                <td style="padding:8px 12px; border:1px solid #000; font-weight:700;">Amount Paid (This Receipt)</td>
+                <td style="padding:8px 12px; border:1px solid #000; text-align:right; font-weight:800; color:#e8590c;">₹${Number(rec.amount_paid).toLocaleString()}</td>
               </tr>
               <tr style="background:#fafafa;">
-                <td style="padding:6px 10px; border:1px solid #000; font-weight:700;">Remaining Balance Due</td>
-                <td style="padding:6px 10px; border:1px solid #000; text-align:right; font-weight:800; color:#000;">₹${Number(rec.balance_amount).toLocaleString()}</td>
+                <td style="padding:8px 12px; border:1px solid #000; font-weight:700;">Remaining Balance Due</td>
+                <td style="padding:8px 12px; border:1px solid #000; text-align:right; font-weight:800; color:#000;">₹${Number(rec.balance_amount).toLocaleString()}</td>
               </tr>
             </tbody>
           </table>
 
-          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:1.5rem;">
-            <div style="font-size:0.68rem; color:#666; max-width:280px; line-height:1.3;">
-              * Computer generated receipt. Fee non-refundable.<br/>Shape & Shine Coaching Class.
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:2rem;">
+            <div style="font-size:0.72rem; color:#666; max-width:320px; line-height:1.4;">
+              * Computer-generated official receipt. Fee once paid is non-refundable.<br/>Shape & Shine Coaching Class, Surat.
             </div>
             <div style="text-align:center;">
-              <div style="border-bottom:1px solid #000; width:140px; margin-bottom:4px;"></div>
-              <p style="font-size:0.75rem; font-weight:800; margin:0;">Authorised Signatory</p>
+              <div style="border-bottom:1px solid #000; width:160px; margin-bottom:6px;"></div>
+              <p style="font-size:0.78rem; font-weight:800; margin:0; text-transform:uppercase;">Authorised Signatory</p>
             </div>
           </div>
         </div>
@@ -2268,7 +2575,7 @@
 
         const tbody = document.getElementById('attendance-tbody');
         if (currentAttendanceStudents.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:1.2rem; color:var(--text-muted);">No students enrolled in ${std}.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--text-muted);">No students enrolled in ${std}.</td></tr>`;
           return;
         }
 
@@ -2285,7 +2592,7 @@
             </td>
             <td>
               <button class="btn-action btn-wa" onclick="sendQuickAbsentAlert('${s.phone}', '${s.name}', '${date}')">
-                📲 Alert
+                📲 Send Absent Alert
               </button>
             </td>
           </tr>
@@ -2320,7 +2627,7 @@
           btn.innerText = status === 'Present' ? '✓ PRESENT' : '✖ ABSENT';
         }
       });
-      showToast(`Marked all as ${status}!`);
+      showToast(`Marked all as ${status}! Click 'SAVE ATTENDANCE' to confirm.`);
     }
 
     async function saveAttendance() {
@@ -2334,23 +2641,24 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ standard: std, date, records })
         });
+        const data = await res.json();
         if(res.ok) {
-          showToast('Attendance saved successfully!');
+          showToast(data.message || 'Attendance saved successfully!');
         } else {
           showToast('Failed to save attendance', 'error');
         }
       } catch(e) {
-        showToast('Network error', 'error');
+        showToast('Network error, please try again', 'error');
       }
     }
 
     function sendQuickAbsentAlert(phone, name, date) {
       if(!phone || phone.length < 10) {
-        showToast('Invalid phone number', 'error');
+        showToast('Invalid phone number for student', 'error');
         return;
       }
       const cleanPhone = phone.replace(/\D/g, '').slice(-10);
-      const text = encodeURIComponent(`Dear Parent,\nThis is an attendance alert from Shape & Shine Coaching Class. Your child ${name} was marked ABSENT today (${date}) in regular lectures. Please contact us: 098245 28709`);
+      const text = encodeURIComponent(`Dear Parent,\nThis is an attendance alert from Shape & Shine Coaching Class. Your child ${name} was marked ABSENT today (${date}) in regular lectures. Please contact us for details: 098245 28709`);
       window.open(`https://wa.me/91${cleanPhone}?text=${text}`, '_blank');
     }
 
@@ -2365,14 +2673,14 @@
         return `
           <div class="setting-card">
             <div>
-              <div style="font-weight:800; font-size:0.88rem; color:#fff;">${std}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+              <div style="font-weight:800; font-size:0.95rem; color:#fff;">${std}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
                 ☀️ Morning: <span style="color:var(--accent-orange); font-weight:700;">${morning}</span><br/>
                 🌙 Evening: <span style="color:#2ed573; font-weight:700;">${evening}</span>
               </div>
             </div>
             <div>
-              <button class="btn-action" onclick="openTimingModal('${std}', '${morning}', '${evening}')">Edit</button>
+              <button class="btn-action" onclick="openTimingModal('${std}', '${morning}', '${evening}')">Edit Timings</button>
             </div>
           </div>
         `;
@@ -2402,8 +2710,9 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ standard: std, morning_batch: morning, evening_batch: evening })
         });
+        const data = await res.json();
         if(res.ok) {
-          showToast(`Timings updated for ${std}!`);
+          showToast(data.message || `Timings updated for ${std}!`);
           closeTimingModal();
           fetchAdminData();
         }
@@ -2423,13 +2732,13 @@
         return `
           <div class="setting-card">
             <div>
-              <div style="font-weight:800; font-size:0.88rem;">${std}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">${studentCount} Enrolled</div>
-              <div style="color:var(--accent-orange); font-weight:800; font-size:1rem; margin-top:2px;">₹${currentFee.toLocaleString()} / yr</div>
-              <div style="font-size:0.72rem; color:#2ed573; font-weight:700;">₹${monthlyFee.toLocaleString()} / mo</div>
+              <div style="font-weight:800; font-size:0.95rem;">${std}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">${studentCount} Students Enrolled</div>
+              <div style="color:var(--accent-orange); font-weight:800; font-size:1.1rem; margin-top:4px;">₹${currentFee.toLocaleString()} / year</div>
+              <div style="font-size:0.75rem; color:#2ed573; font-weight:700;">₹${monthlyFee.toLocaleString()} / month</div>
             </div>
             <div>
-              <button class="btn-action" onclick="openClassFeeModal('${std}', ${currentFee}, ${monthlyFee})">Change</button>
+              <button class="btn-action" style="padding:8px 14px;" onclick="openClassFeeModal('${std}', ${currentFee}, ${monthlyFee})">Change Fee</button>
             </div>
           </div>
         `;
@@ -2456,7 +2765,7 @@
       const applyExisting = document.getElementById('modal-fee-apply-existing').checked;
 
       if (!feeAmount || feeAmount <= 0) {
-        showToast('Enter valid course fee', 'error');
+        showToast('Please enter a valid course fee', 'error');
         return;
       }
 
@@ -2466,13 +2775,14 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ standard: std, fee_amount: feeAmount, default_monthly_fee: monthlyAmount, update_existing: applyExisting })
         });
+        const data = await res.json();
         if (res.ok) {
-          showToast(`Updated fee for ${std}!`);
+          showToast(data.message || `Updated fee for ${std}!`);
           closeClassFeeModal();
           fetchAdminData();
         }
       } catch(e) {
-        showToast('Network error', 'error');
+        showToast('Network error, please try again', 'error');
       }
     }
 
@@ -2483,7 +2793,7 @@
 
       let html = `
         <div class="std-chip ${selectedStandardFilter === 'ALL' ? 'active' : ''}" onclick="selectStandardFilter('ALL')">
-          All <span class="std-count-badge">${allCount}</span>
+          All Standards <span class="std-count-badge">${allCount}</span>
         </div>
       `;
 
@@ -2525,43 +2835,45 @@
 
       const tbody = document.getElementById('students-tbody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No students found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">No students found matching this criteria.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(s => {
         const total = Math.max(0, Number(s.total_fees || 15000));
         const paid = Math.min(total, Math.max(0, Number(s.paid_amount || 0)));
-        const plan = s.payment_plan === 'Monthly' ? `Monthly (₹${s.monthly_fee || 1500}/mo)` : 'One-Time';
+        const plan = s.payment_plan === 'Monthly' ? `Monthly (₹${s.monthly_fee || 1500}/mo)` : 'One-Time Course';
 
         return `
           <tr>
             <td>
-              <strong style="font-size:0.88rem; color:#fff;">${s.name}</strong>
-              <div style="font-size:0.68rem; color:var(--text-muted); margin-top:1px;">Session: ${s.academic_year || '2026-2027'}</div>
-            </td>
-            <td><span style="color:var(--accent-orange); font-weight:700;">${s.standard}</span></td>
-            <td>
-              <div style="color:#eee; font-size:0.8rem;">${s.email}</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">${s.phone || '-'}</div>
+              <strong style="font-size:0.95rem; color:#fff;">${s.name}</strong>
+              <div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Session: ${s.academic_year || '2026-2027'}</div>
             </td>
             <td>
-              <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap; margin-bottom:2px;">
+              <span style="color:var(--accent-orange); font-weight:700;">${s.standard}</span>
+            </td>
+            <td>
+              <div style="color:#eee;">${s.email}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${s.phone || '-'}</div>
+            </td>
+            <td>
+              <div style="display:flex; gap:5px; align-items:center; flex-wrap:wrap; margin-bottom:4px;">
                 <span class="badge ${s.fee_status === 'Paid' ? 'badge-paid' : 'badge-pending'}">${s.fee_status}</span>
                 <span class="badge-plan">${plan}</span>
               </div>
-              <div style="font-size:0.74rem; font-weight:600; color:var(--text-muted);">
-                ₹${paid.toLocaleString()} / ₹${total.toLocaleString()}
+              <div style="font-size:0.78rem; font-weight:600; color:var(--text-muted);">
+                Paid: ₹${paid.toLocaleString()} / ₹${total.toLocaleString()}
               </div>
             </td>
             <td>
               <div class="actions-flex-container">
-                <button class="btn-action btn-wa" onclick="openWhatsAppModal(${s.id})">📲 WA</button>
+                <button class="btn-action btn-wa" onclick="openWhatsAppModal(${s.id})">📲 WhatsApp</button>
                 <button class="btn-action btn-receipt" onclick="openReceiptModal(${s.id})">🧾 Receipt</button>
                 <button class="btn-action btn-promote" onclick="openPromoteModal(${s.id})">🎓 Promote</button>
                 <button class="btn-action btn-edit" onclick="openEditModal(${s.id})">Edit</button>
-                <button class="btn-action" onclick="toggleFeeById(${s.id})">Toggle</button>
-                <button class="btn-action btn-delete" onclick="promptDeleteStudent(${s.id})">Del</button>
+                <button class="btn-action" onclick="toggleFeeById(${s.id})">Fee Toggle</button>
+                <button class="btn-action btn-delete" onclick="promptDeleteStudent(${s.id})">Delete</button>
               </div>
             </td>
           </tr>
@@ -2599,6 +2911,7 @@
       document.getElementById('edit-modal').style.display = 'none';
     }
 
+    // STRICT STUDENT EDIT
     async function saveStudentEdit() {
       const id = Number(document.getElementById('edit-id').value);
       const name = document.getElementById('edit-name').value.trim();
@@ -2610,13 +2923,17 @@
       const total_fees = Math.max(0, Number(document.getElementById('edit-total-fees').value) || 15000);
       let paid_amount = Math.max(0, Number(document.getElementById('edit-paid-amount').value) || 0);
       
-      if (paid_amount > total_fees) paid_amount = total_fees;
+      if (paid_amount > total_fees) {
+        paid_amount = total_fees;
+      }
 
       let fee_status = document.getElementById('edit-fee-status').value;
-      if (paid_amount >= total_fees && total_fees > 0) fee_status = 'Paid';
+      if (paid_amount >= total_fees && total_fees > 0) {
+        fee_status = 'Paid';
+      }
 
       if (!name || !email) {
-        showToast('Name and email required', 'error');
+        showToast('Name and email are required', 'error');
         return;
       }
 
@@ -2626,18 +2943,20 @@
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ name, email, standard, phone, fee_status, paid_amount, total_fees, payment_plan, monthly_fee })
         });
+        const data = await res.json();
         if (res.ok) {
-          showToast('Updated successfully!');
+          showToast(data.message || 'Student updated successfully!');
           closeEditModal();
           fetchAdminData();
         } else {
-          showToast('Failed to update student', 'error');
+          showToast(data.error || 'Failed to update student', 'error');
         }
       } catch(e) {
-        showToast('Network error', 'error');
+        showToast('Network error, please try again', 'error');
       }
     }
 
+    // CONTROLLED FEE TOGGLE
     async function toggleFeeById(id) {
       const student = cachedStudents.find(s => Number(s.id) === Number(id));
       if (!student) return;
@@ -2646,7 +2965,12 @@
       const currentPaid = Math.min(totalFee, Math.max(0, Number(student.paid_amount || 0)));
       const newStatus = student.fee_status === 'Paid' ? 'Pending' : 'Paid';
       
-      let newPaidAmount = (newStatus === 'Paid') ? totalFee : ((currentPaid === totalFee) ? 0 : currentPaid);
+      let newPaidAmount = currentPaid;
+      if (newStatus === 'Paid') {
+        newPaidAmount = totalFee;
+      } else {
+        newPaidAmount = (currentPaid === totalFee) ? 0 : currentPaid;
+      }
 
       await fetch(`/api/admin/student/${id}`, {
         method: 'PUT',
@@ -2663,14 +2987,14 @@
           monthly_fee: student.monthly_fee || 0
         })
       });
-      showToast(`Status: ${newStatus}!`);
+      showToast(`Status updated to ${newStatus}!`);
       fetchAdminData();
     }
 
     function promptDeleteStudent(id) {
-      openConfirmModal('Delete Student Account', 'Are you sure you want to delete this student account? The record will be archived safely in database.', async () => {
+      openConfirmModal('Delete Student Account', 'Are you sure you want to delete this student account? The full record will be safely archived in the backup database.', async () => {
         await fetch(`/api/admin/student/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Student deleted & archived!');
+        showToast('Student deleted and safely archived in backup database!');
         fetchAdminData();
       });
     }
@@ -2681,16 +3005,18 @@
         <tr>
           <td>
             <strong>${i.parent_name}</strong>
-            ${Number(i.is_read) === 0 ? '<span class="unread-star-badge" style="margin-left:4px;">● NEW</span>' : ''}
-            <br/><span style="font-size:0.74rem; color:var(--text-muted);">Child: ${i.student_name}</span>
+            ${Number(i.is_read) === 0 ? '<span class="unread-star-badge" style="margin-left:5px;">● * NEW</span>' : ''}
+            <br/><span style="font-size:0.78rem; color:var(--text-muted);">Child: ${i.student_name}</span>
           </td>
           <td><span style="color:var(--accent-orange); font-weight:700;">${i.standard}</span></td>
           <td><a href="tel:${i.phone}" style="color:var(--accent-orange); text-decoration:none;">${i.phone}</a></td>
-          <td><div style="font-size:0.78rem; color:#f0f0f0; max-width:240px; line-height:1.3;">${i.message || '-'}</div></td>
+          <td>
+            <div style="font-size:0.85rem; color:#f0f0f0; max-width:320px; line-height:1.4;">${i.message ? i.message : '<em style="color:#666;">No message query provided</em>'}</div>
+          </td>
           <td>
             <div class="actions-flex-container">
-              <a href="https://wa.me/91${(i.phone || '').replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(`Hello ${i.parent_name},\nThank you for your admission enquiry at Shape & Shine Coaching Class.`)}" target="_blank" class="btn-action btn-wa">📲 WA</a>
-              <button class="btn-action btn-delete" onclick="promptDeleteInquiry(${i.id})">Del</button>
+              <a href="https://wa.me/91${(i.phone || '').replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(`Hello ${i.parent_name},\nThank you for your admission enquiry for ${i.student_name} at Shape & Shine Coaching Class.`)}" target="_blank" class="btn-action btn-wa">📲 WhatsApp</a>
+              <button class="btn-action btn-delete" onclick="promptDeleteInquiry(${i.id})">Remove</button>
             </div>
           </td>
         </tr>
@@ -2699,14 +3025,14 @@
 
     async function markAllInquiriesRead() {
       await fetch('/api/admin/inquiries/read', { method: 'PUT', headers: { 'Authorization': `Bearer ${token}` } });
-      showToast('All leads marked as read.');
+      showToast('All enquiry leads marked as read.');
       fetchAdminData();
     }
 
     function promptDeleteInquiry(id) {
-      openConfirmModal('Remove Enquiry Lead', 'Are you sure you want to remove this enquiry lead?', async () => {
+      openConfirmModal('Remove Enquiry Lead', 'Are you sure you want to remove this admission enquiry lead?', async () => {
         await fetch(`/api/admin/inquiries/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Enquiry removed.');
+        showToast('Admission enquiry removed successfully.');
         fetchAdminData();
       });
     }
@@ -2714,7 +3040,7 @@
     function promptDeleteMark(id) {
       openConfirmModal('Delete Test Record', 'Are you sure you want to delete this score record?', async () => {
         await fetch(`/api/admin/marks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Score record deleted.');
+        showToast('Test mark record deleted successfully.');
         fetchAdminData();
       });
     }
@@ -2740,7 +3066,7 @@
       }
 
       if (!file_data && !file_link) {
-        showToast('Upload PDF or provide link', 'error');
+        showToast('Please upload a PDF file or provide a web link', 'error');
         return;
       }
 
@@ -2758,7 +3084,7 @@
       btn.disabled = false;
 
       if(res.ok) {
-        showToast('Material published!');
+        showToast('Study material published successfully!');
         document.getElementById('mat-title').value = '';
         document.getElementById('mat-sub').value = '';
         document.getElementById('mat-url').value = '';
@@ -2768,15 +3094,100 @@
     }
 
     function promptDeleteMaterial(id) {
-      openConfirmModal('Delete Material', 'Are you sure you want to remove this study material?', async () => {
+      openConfirmModal('Delete Study Material', 'Are you sure you want to remove this study material?', async () => {
         await fetch(`/api/admin/materials/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-        showToast('Material removed.');
+        showToast('Study material removed successfully.');
         fetchAdminData();
       });
     }
 
-    // Optimized Polling (10s interval to save battery and data on mobile)
-    setInterval(fetchAdminData, 10000);
+    // ========================================================
+    // POPUPS: bottom-sheet behaviour (tap outside / swipe down / Esc to close)
+    // ========================================================
+    const MODAL_CLOSERS = {
+      'whatsapp-modal': () => closeWhatsAppModal(),
+      'receipt-modal': () => closeReceiptModal(),
+      'edit-modal': () => closeEditModal(),
+      'promote-modal': () => closePromoteModal(),
+      'settings-modal': () => closeSettingsModal(),
+      'timing-modal': () => closeTimingModal(),
+      'class-fee-modal': () => closeClassFeeModal(),
+      'confirm-modal': () => closeConfirmModal()
+    };
+    function closeOverlay(overlay) {
+      const fn = MODAL_CLOSERS[overlay.id];
+      if (fn) fn(); else overlay.style.display = 'none';
+    }
+    function isAnyModalOpen() {
+      return Array.from(document.querySelectorAll('.modal-overlay')).some(o => o.style.display === 'flex');
+    }
+
+    const modalObserver = new MutationObserver(() => {
+      document.body.classList.toggle('modal-open', isAnyModalOpen());
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      modalObserver.observe(overlay, { attributes: true, attributeFilter: ['style'] });
+
+      // tap on the dark background closes (only if the press also started there)
+      let pressedOnBackdrop = false;
+      overlay.addEventListener('pointerdown', (e) => { pressedOnBackdrop = (e.target === overlay); });
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay && pressedOnBackdrop) closeOverlay(overlay);
+        pressedOnBackdrop = false;
+      });
+
+      // swipe down on the sheet's top handle area to close (mobile)
+      const box = overlay.querySelector('.modal-box');
+      if (!box) return;
+      let startY = 0, dy = 0, dragging = false;
+      box.addEventListener('touchstart', (e) => {
+        if (window.innerWidth > 768 || box.scrollTop > 0) return;
+        const touchY = e.touches[0].clientY - box.getBoundingClientRect().top;
+        if (touchY > 40) return;
+        dragging = true; startY = e.touches[0].clientY; dy = 0;
+        box.style.transition = 'none';
+      }, { passive: true });
+      box.addEventListener('touchmove', (e) => {
+        if (!dragging) return;
+        dy = Math.max(0, e.touches[0].clientY - startY);
+        box.style.transform = `translateY(${dy}px)`;
+      }, { passive: true });
+      const endDrag = () => {
+        if (!dragging) return;
+        dragging = false;
+        box.style.transition = 'transform 0.22s ease-out';
+        if (dy > 100) {
+          closeOverlay(overlay);
+          box.style.transform = '';
+          box.style.transition = '';
+        } else {
+          box.style.transform = 'translateY(0)';
+          setTimeout(() => { box.style.transform = ''; box.style.transition = ''; }, 240);
+        }
+        dy = 0;
+      };
+      box.addEventListener('touchend', endDrag);
+      box.addEventListener('touchcancel', endDrag);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape') return;
+      const open = Array.from(document.querySelectorAll('.modal-overlay')).filter(o => o.style.display === 'flex').pop();
+      if (open) closeOverlay(open);
+    });
+
+    // ========================================================
+    // BACKGROUND REFRESH (every 7s)
+    // pauses when the app is in background or a popup is open
+    // ========================================================
+    setInterval(() => {
+      if (document.hidden || isAnyModalOpen()) return;
+      fetchAdminData(true);
+    }, 7000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) fetchAdminData(true);
+    });
   </script>
 </body>
 </html>
