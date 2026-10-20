@@ -24,96 +24,291 @@
       --whatsapp: #25d366;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
-    body { background-color: var(--bg-dark); color: var(--text-white); min-height: 100vh; display: flex; flex-direction: column; }
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+      scroll-behavior: smooth;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-    #toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 5000; display: flex; flex-direction: column; gap: 0.8rem; pointer-events: none; }
-    .toast { background: rgba(18, 20, 24, 0.98); border: 1px solid var(--border-subtle); color: #fff; padding: 1rem 1.6rem; border-radius: 14px; font-size: 0.9rem; font-weight: 600; pointer-events: auto; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+    body { 
+      background-color: var(--bg-dark); 
+      color: var(--text-white); 
+      min-height: 100vh; 
+      display: flex; 
+      flex-direction: column; 
+    }
+
+    #toast-container { 
+      position: fixed; 
+      top: 1.2rem; 
+      right: 1.2rem; 
+      z-index: 9999; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 0.8rem; 
+      pointer-events: none; 
+    }
+    .toast { 
+      background: rgba(18, 20, 24, 0.98); 
+      border: 1px solid var(--border-subtle); 
+      color: #fff; 
+      padding: 0.9rem 1.4rem; 
+      border-radius: 14px; 
+      font-size: 0.88rem; 
+      font-weight: 600; 
+      pointer-events: auto; 
+      transform: translateX(120%); 
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.6); 
+    }
     .toast.show { transform: translateX(0); }
     .toast.success { border-left: 4px solid var(--accent-orange); }
     .toast.error { border-left: 4px solid var(--danger); }
 
     /* HEADER */
     header {
-      padding: 0.85rem 1.8rem; display: flex; justify-content: space-between; align-items: center;
-      background: rgba(10, 11, 14, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-subtle);
-      position: sticky; top: 0; z-index: 100; gap: 0.8rem;
+      padding: 0.8rem 1.4rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      background: rgba(10, 11, 14, 0.96); 
+      backdrop-filter: blur(20px); 
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky; 
+      top: 0; 
+      z-index: 100; 
+      gap: 0.8rem;
     }
-    .brand { font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px; white-space: nowrap; flex-shrink: 0; }
+    .brand { 
+      font-weight: 800; 
+      font-size: 0.96rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 8px; 
+      white-space: nowrap; 
+      flex-shrink: 0; 
+    }
 
     .admin-nav-tabs {
-      display: flex; gap: 0.25rem; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 30px;
-      border: 1px solid var(--border-subtle); overflow-x: auto; white-space: nowrap; scrollbar-width: none;
-      flex-shrink: 1; min-width: 0;
+      display: flex; 
+      gap: 0.25rem; 
+      background: rgba(255,255,255,0.03); 
+      padding: 4px; 
+      border-radius: 30px;
+      border: 1px solid var(--border-subtle); 
+      overflow-x: auto; 
+      white-space: nowrap; 
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      flex-shrink: 1; 
+      min-width: 0;
     }
     .admin-nav-tabs::-webkit-scrollbar { display: none; }
+    
     .tab-btn {
-      background: transparent; border: none; color: var(--text-muted); padding: 0.4rem 0.85rem;
-      border-radius: 20px; font-size: 0.76rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
-      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+      background: transparent; 
+      border: none; 
+      color: var(--text-muted); 
+      padding: 0.42rem 0.85rem;
+      border-radius: 20px; 
+      font-size: 0.76rem; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: all 0.2s ease;
+      display: inline-flex; 
+      align-items: center; 
+      gap: 5px; 
+      white-space: nowrap;
     }
-    .tab-btn.active { background: var(--accent-orange); color: #fff; box-shadow: 0 4px 15px rgba(232, 89, 12, 0.35); }
+    .tab-btn.active { 
+      background: var(--accent-orange); 
+      color: #fff; 
+      box-shadow: 0 4px 15px rgba(232, 89, 12, 0.35); 
+    }
 
     .nav-badge-dot {
-      background: var(--danger); color: #fff; font-size: 0.65rem; padding: 2px 7px;
-      border-radius: 10px; font-weight: 800; animation: pulseRed 1.8s infinite;
+      background: var(--danger); 
+      color: #fff; 
+      font-size: 0.65rem; 
+      padding: 2px 7px;
+      border-radius: 10px; 
+      font-weight: 800; 
+      animation: pulseRed 1.8s infinite;
     }
     @keyframes pulseRed { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.15); } }
 
     .btn-top {
-      background: rgba(255, 255, 255, 0.06); border: 1px solid var(--border-subtle); color: var(--text-white);
-      padding: 0.45rem 0.9rem; border-radius: 30px; font-size: 0.76rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.06); 
+      border: 1px solid var(--border-subtle); 
+      color: var(--text-white);
+      padding: 0.45rem 0.85rem; 
+      border-radius: 30px; 
+      font-size: 0.75rem; 
+      font-weight: 700; 
+      cursor: pointer; 
+      text-decoration: none; 
+      transition: all 0.2s; 
+      white-space: nowrap; 
+      flex-shrink: 0;
     }
-    .btn-top:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-1px); }
+    .btn-top:hover { 
+      background: var(--accent-orange); 
+      border-color: var(--accent-orange); 
+      transform: translateY(-1px); 
+    }
 
-    .admin-container { max-width: 1440px; margin: 2rem auto; padding: 0 1.5rem; flex: 1; width: 100%; }
+    .admin-container { 
+      max-width: 1440px; 
+      margin: 1.5rem auto; 
+      padding: 0 1.2rem; 
+      flex: 1; 
+      width: 100%; 
+    }
     
     @keyframes adminFadeIn {
-      from { opacity: 0; transform: translateY(14px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
-    .kpi-card {
-      background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 1.4rem;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: adminFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      transition: transform 0.3s, border-color 0.3s;
+    
+    .kpi-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+      gap: 1.2rem; 
+      margin-bottom: 1.8rem; 
     }
-    .kpi-card:hover { border-color: var(--accent-orange); transform: translateY(-3px); }
-    .kpi-label { color: var(--text-muted); font-size: 0.72rem; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 0.4rem; }
-    .kpi-val { font-family: 'Space Grotesk', sans-serif; font-size: 2.2rem; font-weight: 700; color: #fff; }
+    .kpi-card {
+      background: var(--bg-card); 
+      border: 1px solid var(--border-subtle); 
+      border-radius: 20px; 
+      padding: 1.3rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+      animation: adminFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transition: transform 0.25s, border-color 0.25s;
+    }
+    .kpi-card:hover { border-color: var(--accent-orange); transform: translateY(-2px); }
+    .kpi-label { 
+      color: var(--text-muted); 
+      font-size: 0.72rem; 
+      font-weight: 700; 
+      letter-spacing: 1.2px; 
+      text-transform: uppercase; 
+      margin-bottom: 0.4rem; 
+    }
+    .kpi-val { 
+      font-family: 'Space Grotesk', sans-serif; 
+      font-size: 2.1rem; 
+      font-weight: 700; 
+      color: #fff; 
+    }
 
-    .tab-content { display: none; animation: adminFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    .tab-content.active { display: block; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: adminFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-    .panel-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 2rem; backdrop-filter: blur(16px); margin-bottom: 2rem; }
-    .panel-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 10px; }
-    .panel-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 12px; }
+    .panel-card { 
+      background: var(--bg-card); 
+      border: 1px solid var(--border-subtle); 
+      border-radius: 22px; 
+      padding: 1.8rem; 
+      backdrop-filter: blur(14px); 
+      margin-bottom: 1.8rem; 
+    }
+    .panel-title { 
+      font-size: 1.15rem; 
+      font-weight: 800; 
+      margin-bottom: 1.2rem; 
+      display: flex; 
+      align-items: center; 
+      gap: 10px; 
+    }
+    .panel-header-row { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 1.2rem; 
+      flex-wrap: wrap; 
+      gap: 12px; 
+    }
 
     .input-group { margin-bottom: 1.1rem; }
-    .input-label { font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; display: block; }
-    input, select, textarea {
-      width: 100%; background: #181b22; border: 1px solid var(--border-subtle);
-      border-radius: 12px; padding: 0.8rem 1rem; color: #fff; font-size: 0.9rem; outline: none; transition: border 0.25s;
+    .input-label { 
+      font-size: 0.74rem; 
+      font-weight: 700; 
+      letter-spacing: 0.8px; 
+      color: var(--text-muted); 
+      text-transform: uppercase; 
+      margin-bottom: 0.4rem; 
+      display: block; 
     }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent-orange); box-shadow: 0 0 12px rgba(232, 89, 12, 0.25); }
+    input, select, textarea {
+      width: 100%; 
+      background: #181b22; 
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px; 
+      padding: 0.8rem 1rem; 
+      color: #fff; 
+      font-size: 0.9rem; 
+      outline: none; 
+      transition: border 0.25s, box-shadow 0.25s;
+    }
+    input:focus, select:focus, textarea:focus { 
+      border-color: var(--accent-orange); 
+      box-shadow: 0 0 12px rgba(232, 89, 12, 0.25); 
+    }
     select option { background: #181b22; color: #fff; padding: 10px; }
 
     .btn-create {
-      background: var(--accent-orange); color: #fff; width: 100%; padding: 0.95rem; border-radius: 12px;
-      border: none; font-weight: 700; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 1.2px; cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1); margin-top: 0.6rem;
+      background: var(--accent-orange); 
+      color: #fff; 
+      width: 100%; 
+      padding: 0.95rem; 
+      border-radius: 12px;
+      border: none; 
+      font-weight: 700; 
+      font-size: 0.9rem; 
+      text-transform: uppercase; 
+      letter-spacing: 1px; 
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); 
+      margin-top: 0.6rem;
     }
-    .btn-create:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(232, 89, 12, 0.4); }
-    .btn-create:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-create:hover { 
+      background: var(--accent-hover); 
+      transform: translateY(-2px); 
+      box-shadow: 0 10px 20px rgba(232, 89, 12, 0.4); 
+    }
+    .btn-create:disabled { 
+      opacity: 0.55; 
+      cursor: not-allowed; 
+      transform: none; 
+      box-shadow: none; 
+    }
 
     /* TABLE */
-    .data-table-wrap { overflow-x: auto; margin-top: 0.8rem; }
+    .data-table-wrap { 
+      overflow-x: auto; 
+      margin-top: 0.8rem; 
+      -webkit-overflow-scrolling: touch; 
+    }
     table { width: 100%; border-collapse: collapse; text-align: left; }
     th {
-      font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;
-      padding: 1rem 0.9rem; border-bottom: 1px solid var(--border-subtle); letter-spacing: 0.5px;
+      font-size: 0.72rem; 
+      font-weight: 700; 
+      color: var(--text-muted); 
+      text-transform: uppercase;
+      padding: 1rem 0.9rem; 
+      border-bottom: 1px solid var(--border-subtle); 
+      letter-spacing: 0.5px;
     }
-    td { padding: 1.1rem 0.9rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; vertical-align: middle; }
+    td { 
+      padding: 1rem 0.9rem; 
+      border-bottom: 1px solid var(--border-subtle); 
+      font-size: 0.88rem; 
+      vertical-align: middle; 
+    }
 
     .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-block; }
     .badge-paid { background: rgba(46,213,115,0.15); color: var(--success); }
@@ -123,9 +318,20 @@
     .actions-flex-container { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
 
     .btn-action {
-      background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); color: #fff;
-      padding: 6px 11px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer;
-      transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+      background: rgba(255,255,255,0.06); 
+      border: 1px solid var(--border-subtle); 
+      color: #fff;
+      padding: 6px 11px; 
+      border-radius: 8px; 
+      font-size: 0.76rem; 
+      font-weight: 700; 
+      cursor: pointer;
+      transition: all 0.2s; 
+      text-decoration: none; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 4px; 
+      white-space: nowrap;
     }
     .btn-action:hover { background: var(--accent-orange); border-color: var(--accent-orange); transform: translateY(-1px); }
     .btn-wa { background: rgba(37,211,102,0.15); border-color: rgba(37,211,102,0.4); color: var(--whatsapp); }
@@ -140,16 +346,32 @@
     .btn-delete:hover { background: var(--danger); color: #fff; }
 
     .std-filter-container {
-      display: flex; gap: 0.5rem; overflow-x: auto; white-space: nowrap;
-      padding: 0.4rem 0.2rem 0.8rem 0.2rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border-subtle);
-      scrollbar-width: none; -ms-overflow-style: none;
+      display: flex; 
+      gap: 0.5rem; 
+      overflow-x: auto; 
+      white-space: nowrap;
+      padding: 0.4rem 0.2rem 0.8rem 0.2rem; 
+      margin-bottom: 1.2rem; 
+      border-bottom: 1px solid var(--border-subtle);
+      scrollbar-width: none; 
+      -webkit-overflow-scrolling: touch;
     }
     .std-filter-container::-webkit-scrollbar { display: none; }
 
     .std-chip {
-      background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-subtle); color: var(--text-muted);
-      padding: 0.45rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.04); 
+      border: 1px solid var(--border-subtle); 
+      color: var(--text-muted);
+      padding: 0.45rem 1rem; 
+      border-radius: 20px; 
+      font-size: 0.78rem; 
+      font-weight: 700; 
+      cursor: pointer;
+      display: inline-flex; 
+      align-items: center; 
+      gap: 6px; 
+      transition: all 0.2s; 
+      flex-shrink: 0;
     }
     .std-chip:hover { border-color: var(--accent-orange); color: #fff; }
     .std-chip.active { background: var(--accent-orange); border-color: var(--accent-orange); color: #fff; box-shadow: 0 4px 12px rgba(232, 89, 12, 0.3); }
@@ -168,8 +390,16 @@
     .att-absent { background: rgba(255,71,87,0.2); color: var(--danger); border: 1px solid var(--danger); }
 
     /* 1-ON-1 CHAT HUB */
-    .chat-hub-container { display: grid; grid-template-columns: 340px 1fr; height: 600px; background: #101216; border: 1px solid var(--border-subtle); border-radius: 20px; overflow: hidden; }
-    .chat-user-list { border-right: 1px solid var(--border-subtle); overflow-y: auto; background: rgba(255,255,255,0.01); height: 100%; }
+    .chat-hub-container { 
+      display: grid; 
+      grid-template-columns: 330px 1fr; 
+      height: 600px; 
+      background: #101216; 
+      border: 1px solid var(--border-subtle); 
+      border-radius: 20px; 
+      overflow: hidden; 
+    }
+    .chat-user-list { border-right: 1px solid var(--border-subtle); overflow-y: auto; background: rgba(255,255,255,0.01); height: 100%; -webkit-overflow-scrolling: touch; }
     .chat-user-header { padding: 1rem 1.2rem; font-size: 0.85rem; font-weight: 800; letter-spacing: 1px; color: var(--text-muted); border-bottom: 1px solid var(--border-subtle); background: #14171d; }
     .chat-user-card { padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: background 0.2s; display: flex; flex-direction: column; gap: 3px; position: relative; }
     .chat-user-card:hover { background: rgba(255,255,255,0.04); }
@@ -180,39 +410,63 @@
     .unread-star-badge { background: var(--accent-orange); color: #fff; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 12px; }
 
     .chat-active-pane { display: flex; flex-direction: column; background: #0c0e12; height: 100%; overflow: hidden; position: relative; }
-    .chat-active-header { padding: 1rem 1.5rem; background: #14171d; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-    .chat-thread-box { flex: 1 1 auto; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; }
+    .chat-active-header { padding: 1rem 1.4rem; background: #14171d; border-bottom: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+    .chat-thread-box { flex: 1 1 auto; padding: 1.4rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.9rem; min-height: 0; -webkit-overflow-scrolling: touch; }
     .chat-bubble { max-width: 75%; padding: 0.75rem 1.1rem; border-radius: 14px; font-size: 0.9rem; line-height: 1.45; }
     .chat-bubble.student { background: #1b1f28; border: 1px solid var(--border-subtle); align-self: flex-start; color: #fff; }
     .chat-bubble.admin { background: rgba(232, 89, 12, 0.22); border: 1px solid rgba(232, 89, 12, 0.45); align-self: flex-end; color: #fff; }
     .chat-bubble .b-time { font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; text-align: right; }
-    .chat-composer { padding: 1rem 1.5rem; background: #14171d; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; align-items: center; flex-shrink: 0; z-index: 10; }
-    .chat-composer input { flex: 1; padding: 0.85rem 1rem; }
-    .btn-send-chat { background: var(--accent-orange); color: #fff; border: none; padding: 0.85rem 1.6rem; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .chat-composer { padding: 0.9rem 1.2rem; background: #14171d; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; align-items: center; flex-shrink: 0; z-index: 10; }
+    .chat-composer input { flex: 1; padding: 0.8rem 1rem; }
+    .btn-send-chat { background: var(--accent-orange); color: #fff; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
     /* GALLERY & TEACHERS */
-    .admin-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.4rem; margin-top: 1.2rem; }
+    .admin-gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.4rem; margin-top: 1.2rem; }
     .admin-photo-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); border-radius: 16px; overflow: hidden; transition: transform 0.25s, border-color 0.25s; }
     .admin-photo-card:hover { transform: translateY(-3px); border-color: var(--accent-orange); }
-    .admin-photo-thumb { width: 100%; height: 160px; object-fit: cover; background: #000; }
+    .admin-photo-thumb { width: 100%; height: 180px; object-fit: cover; background: #000; }
     .admin-photo-info { padding: 1rem; }
 
-    /* MODALS */
+    /* MODALS & MOBILE ADAPTIVE SHEET */
     @keyframes modalScaleIn {
-      0% { opacity: 0; transform: scale(0.9) translateY(25px); }
+      0% { opacity: 0; transform: scale(0.95) translateY(15px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; z-index: 4000; padding: 1.5rem;
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      width: 100vw; 
+      height: 100vh; 
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px); 
+      display: none; 
+      justify-content: center; 
+      align-items: center; 
+      z-index: 5000; 
+      padding: 1.2rem;
     }
     .modal-box {
-      background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 22px; padding: 2rem;
-      width: 100%; max-width: 520px; max-height: 86vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.9);
-      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; position: relative;
+      background: #11141a; 
+      border: 1px solid rgba(255, 255, 255, 0.12); 
+      border-radius: 22px; 
+      padding: 1.8rem;
+      width: 100%; 
+      max-width: 520px; 
+      max-height: 88vh; 
+      overflow-y: auto; 
+      box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+      animation: modalScaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+      position: relative;
+      -webkit-overflow-scrolling: touch;
     }
 
-    footer { border-top: 1px solid var(--border-subtle); padding: 3rem 2rem 2rem 2rem; background: #060708; margin-top: auto; }
+    footer { 
+      border-top: 1px solid var(--border-subtle); 
+      padding: 2.5rem 1.8rem 1.8rem 1.8rem; 
+      background: #060708; 
+      margin-top: auto; 
+    }
 
     /* STRICT SINGLE-PAGE PRINT STYLING */
     @media print {
@@ -239,11 +493,32 @@
       }
     }
 
+    /* MOBILE PHONES ADAPTIVE LAYOUT & BOTTOM SHEET */
     @media (max-width: 768px) {
-      header { padding: 0.8rem 1rem; }
-      .admin-container { padding: 0 1rem; }
-      .chat-hub-container { grid-template-columns: 1fr; height: 650px; }
+      header { padding: 0.75rem 1rem; }
+      .brand { font-size: 0.88rem; }
+      .admin-container { padding: 0 0.9rem; margin: 1.2rem auto; }
+      .chat-hub-container { grid-template-columns: 1fr; height: 640px; }
       .actions-flex-container { flex-wrap: wrap; }
+      .panel-card { padding: 1.4rem; }
+      
+      /* Modern native bottom-sheet on mobile */
+      .modal-overlay {
+        align-items: flex-end !important;
+        padding: 0 !important;
+      }
+      .modal-box {
+        max-width: 100% !important;
+        max-height: 90vh !important;
+        border-radius: 24px 24px 0 0 !important;
+        border-bottom: none !important;
+        animation: modalSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        padding: 1.5rem 1.2rem !important;
+      }
+      @keyframes modalSlideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
     }
   </style>
 </head>
@@ -354,7 +629,7 @@
         </div>
 
         <!-- 3 LIVE INTERACTIVE CHARTS -->
-        <div style="display:grid; grid-template-columns: 1fr 1.4fr 1fr; gap:1.5rem; align-items:center; margin-bottom:2rem;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:1.5rem; align-items:center; margin-bottom:2rem;">
           
           <div style="background:rgba(255,255,255,0.02); padding:1.2rem; border-radius:18px; border:1px solid var(--border-subtle); text-align:center;">
             <div style="font-size:0.82rem; font-weight:800; color:var(--text-muted); margin-bottom:0.8rem;">REVENUE COLLECTION RATIO</div>
@@ -432,8 +707,8 @@
             <h2 class="panel-title" style="margin-bottom:0.25rem;"><span>●</span> STUDENT DIRECTORY</h2>
             <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Manage student accounts, fees, receipts, direct WhatsApp alerts, and class promotions</p>
           </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <input type="text" id="student-search-input" placeholder="Search by name, phone or email..." oninput="renderStudentsTable()" style="width:280px; padding:0.65rem 1rem;" />
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="text" id="student-search-input" placeholder="Search by name, phone or email..." oninput="renderStudentsTable()" style="width:260px; padding:0.65rem 1rem;" />
             <button class="btn-action" onclick="exportStudentsCsv()" style="padding:0.65rem 1.2rem; background:rgba(46,213,115,0.15); border-color:var(--success); color:var(--success);">📥 Export CSV</button>
           </div>
         </div>
@@ -466,11 +741,11 @@
             <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Select Standard & Date to record attendance. Absent students can receive 1-click WhatsApp alerts!</p>
           </div>
           <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-            <select id="att-select-std" style="width:200px;" onchange="loadAttendanceList()"></select>
-            <input type="date" id="att-select-date" style="width:160px;" onchange="loadAttendanceList()" />
-            <button class="btn-action" style="padding:0.7rem 1.2rem;" onclick="markAllAttendance('Present')">✓ Mark All Present</button>
-            <button class="btn-action" style="padding:0.7rem 1.2rem;" onclick="markAllAttendance('Absent')">✖ Mark All Absent</button>
-            <button class="btn-action" style="padding:0.7rem 1.5rem; background:var(--accent-orange); color:#fff; border-color:var(--accent-orange);" onclick="saveAttendance()">
+            <select id="att-select-std" style="width:190px;" onchange="loadAttendanceList()"></select>
+            <input type="date" id="att-select-date" style="width:150px;" onchange="loadAttendanceList()" />
+            <button class="btn-action" style="padding:0.65rem 1rem;" onclick="markAllAttendance('Present')">✓ Mark All Present</button>
+            <button class="btn-action" style="padding:0.65rem 1rem;" onclick="markAllAttendance('Absent')">✖ Mark All Absent</button>
+            <button class="btn-action" style="padding:0.65rem 1.3rem; background:var(--accent-orange); color:#fff; border-color:var(--accent-orange);" onclick="saveAttendance()">
               SAVE ATTENDANCE ✓
             </button>
           </div>
@@ -518,7 +793,7 @@
 
     <!-- TAB 6: 1-ON-1 MESSAGING HUB -->
     <div id="tab-messaging" class="tab-content">
-      <section class="panel-card" style="padding: 1.5rem;">
+      <section class="panel-card" style="padding: 1.4rem;">
         <div class="panel-header-row">
           <h2 class="panel-title" style="margin-bottom:0;"><span>💬</span> 1-ON-1 STUDENT CHAT HUB</h2>
           <div style="display:flex; gap:10px; align-items:center;">
@@ -565,7 +840,7 @@
 
     <!-- TAB 7: NOTICES & BULK MARKS ENTRY -->
     <div id="tab-notices" class="tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
         
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">+</span> PUBLISH NOTICE</h2>
@@ -610,7 +885,7 @@
           </div>
 
           <div id="bulk-marks-sheet-container" style="display:none;">
-            <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 14px; margin-bottom: 1rem;">
+            <div style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-subtle); border-radius: 14px; margin-bottom: 1rem; -webkit-overflow-scrolling: touch;">
               <table>
                 <thead>
                   <tr style="background:#14171d;">
@@ -672,7 +947,7 @@
 
     <!-- TAB 8: STUDY MATERIALS -->
     <div id="tab-materials" class="tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">📥</span> UPLOAD STUDY MATERIAL</h2>
           <form onsubmit="event.preventDefault(); uploadMaterial();">
@@ -711,7 +986,7 @@
 
     <!-- TAB 9: INSTITUTE GALLERY -->
     <div id="tab-gallery" class="tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
         
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">📸</span> UPLOAD GALLERY PHOTO</h2>
@@ -720,16 +995,11 @@
             <div class="input-group"><label class="input-label">Event Date</label><input type="date" id="gal-date" required /></div>
 
             <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🖼️ Option 1: Upload Image File (JPG / PNG / WebP)</label>
+              <label class="input-label">🖼️ Upload Image File (JPG / PNG / WebP)</label>
               <input type="file" id="gal-file" accept="image/*" onchange="previewGalleryImage(this)" style="padding:0.5rem; background:#11141a;" />
               <div id="gal-preview-box" style="display:none; margin-top:10px; text-align:center;">
                 <img id="gal-preview-img" src="" style="max-height:140px; border-radius:10px; border:1px solid var(--border-subtle);" />
               </div>
-            </div>
-
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🔗 Option 2: Image Web Link (URL)</label>
-              <input type="url" id="gal-url" placeholder="https://images.unsplash.com/..." />
             </div>
 
             <div class="input-group"><label class="input-label">Short Description</label><textarea id="gal-desc" rows="3" placeholder="Brief note about this event..."></textarea></div>
@@ -750,35 +1020,47 @@
       </div>
     </div>
 
-    <!-- TAB 10: TEACHERS TEAM -->
+    <!-- TAB 10: TEACHERS TEAM (ONLY DIRECT PHOTO UPLOAD - ONLINE URL REMOVED) -->
     <div id="tab-teachers" class="tab-content">
-      <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem;">
         
         <section class="panel-card">
           <h2 class="panel-title"><span style="color:var(--accent-orange)">👨‍🏫</span> ADD TEACHER PROFILE</h2>
           <form onsubmit="event.preventDefault(); submitAddTeacher();">
-            <div class="input-group"><label class="input-label">Teacher Full Name</label><input type="text" id="t-name" placeholder="Prof. Rajesh Sharma" required /></div>
-            <div class="input-group"><label class="input-label">Subject(s) Taught</label><input type="text" id="t-subject" placeholder="Physics & Mathematics" required /></div>
+            <div class="input-group">
+              <label class="input-label">Teacher Full Name</label>
+              <input type="text" id="t-name" placeholder="Prof. Rajesh Sharma" required />
+            </div>
+            <div class="input-group">
+              <label class="input-label">Subject(s) Taught</label>
+              <input type="text" id="t-subject" placeholder="Physics & Mathematics" required />
+            </div>
             
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-              <div class="input-group"><label class="input-label">Experience</label><input type="text" id="t-exp" placeholder="12+ Years Exp" required /></div>
-              <div class="input-group"><label class="input-label">Qualification</label><input type="text" id="t-qual" placeholder="M.Sc (Physics), B.Ed" /></div>
-            </div>
-
-            <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🖼️ Option 1: Upload Photo File</label>
-              <input type="file" id="t-file" accept="image/*" onchange="previewTeacherImage(this)" style="padding:0.5rem; background:#11141a;" />
-              <div id="t-preview-box" style="display:none; margin-top:8px; text-align:center;">
-                <img id="t-preview-img" src="" style="max-height:130px; border-radius:10px; border:1px solid var(--border-subtle);" />
+              <div class="input-group">
+                <label class="input-label">Experience</label>
+                <input type="text" id="t-exp" placeholder="10+ Years Exp" required />
+              </div>
+              <div class="input-group">
+                <label class="input-label">Qualification</label>
+                <input type="text" id="t-qual" placeholder="M.Sc (Maths), B.Ed" />
               </div>
             </div>
 
+            <!-- EXCLUSIVE DIRECT FILE UPLOAD -->
             <div class="input-group" style="background:rgba(255,255,255,0.02); padding:1rem; border-radius:12px; border:1px solid var(--border-subtle);">
-              <label class="input-label">🔗 Option 2: Photo Web Link</label>
-              <input type="url" id="t-url" placeholder="https://images.unsplash.com/..." />
+              <label class="input-label">📷 Upload Teacher Profile Photo</label>
+              <input type="file" id="t-file" accept="image/*" onchange="previewTeacherImage(this)" required style="padding:0.5rem; background:#11141a;" />
+              <div id="t-preview-box" style="display:none; margin-top:10px; text-align:center;">
+                <img id="t-preview-img" src="" style="max-height:140px; border-radius:12px; border:1px solid var(--accent-orange);" />
+              </div>
             </div>
 
-            <div class="input-group"><label class="input-label">Teacher Bio / Description</label><textarea id="t-desc" rows="3" placeholder="Specialist in conceptual clarity and board shortcuts..."></textarea></div>
+            <div class="input-group">
+              <label class="input-label">Teacher Bio / Description</label>
+              <textarea id="t-desc" rows="3" placeholder="Specialist in conceptual clarity, board shortcuts, and personal doubt solving..."></textarea>
+            </div>
+            
             <button type="submit" id="btn-add-teacher" class="btn-create">PUBLISH TEACHER PROFILE →</button>
           </form>
         </section>
@@ -1718,7 +2000,7 @@
       if (e.key === 'Enter') sendHubReply();
     });
 
-    // TEACHERS MANAGEMENT
+    // TEACHERS MANAGEMENT (100% DIRECT LOCAL FILE UPLOAD)
     function previewTeacherImage(input) {
       if (input.files && input.files[0]) {
         const reader = new FileReader();
@@ -1737,25 +2019,23 @@
       const qualification = document.getElementById('t-qual').value.trim();
       const desc = document.getElementById('t-desc').value.trim();
       const fileInput = document.getElementById('t-file');
-      const urlInput = document.getElementById('t-url').value.trim();
 
-      let photo_data = '';
-
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        photo_data = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      } else if (urlInput) {
-        photo_data = urlInput;
-      }
-
-      if (!name || !subject || !experience || !photo_data) {
-        showToast('Please enter Name, Subject, Experience, and Photo', 'error');
+      if (!name || !subject || !experience) {
+        showToast('Please enter Name, Subject, and Experience', 'error');
         return;
       }
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('Please upload a teacher photo file', 'error');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const photo_data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
 
       const btn = document.getElementById('btn-add-teacher');
       btn.innerText = 'SAVING FACULTY PROFILE...';
@@ -1779,7 +2059,6 @@
           document.getElementById('t-exp').value = '';
           document.getElementById('t-qual').value = '';
           document.getElementById('t-desc').value = '';
-          document.getElementById('t-url').value = '';
           document.getElementById('t-file').value = '';
           document.getElementById('t-preview-box').style.display = 'none';
           fetchAdminData();
@@ -1798,7 +2077,7 @@
       document.getElementById('teacher-count-badge').innerText = `${cachedTeachers.length} Faculty`;
 
       if (cachedTeachers.length === 0) {
-        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem; padding:1.5rem; text-align:center;">No faculty profiles added yet.</p>`;
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem; padding:1.5rem; text-align:center;">No faculty profiles added yet. Add teachers using the form on the left.</p>`;
         return;
       }
 
@@ -1930,25 +2209,23 @@
       const date = document.getElementById('gal-date').value;
       const desc = document.getElementById('gal-desc').value.trim();
       const fileInput = document.getElementById('gal-file');
-      const urlInput = document.getElementById('gal-url').value.trim();
 
-      let image_data = '';
-
-      if (fileInput.files.length > 0) {
-        const file = fileInput.files[0];
-        image_data = await new Promise((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      } else if (urlInput) {
-        image_data = urlInput;
-      }
-
-      if (!title || !image_data || !date) {
-        showToast('Please provide Title, Image (File or URL), and Date', 'error');
+      if (!title || !date) {
+        showToast('Please provide Title and Date', 'error');
         return;
       }
+
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showToast('Please choose an image file to upload', 'error');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const image_data = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.readAsDataURL(file);
+      });
 
       const btn = document.getElementById('btn-upload-gal');
       btn.innerText = 'UPLOADING PHOTO...';
@@ -1962,14 +2239,13 @@
         });
         const data = await res.json();
         
-        btn.innerText = 'PUBLISH TO WEBSITE GALLERY →';
+        btn.innerText = 'PUBLISH TO GALLERY →';
         btn.disabled = false;
 
         if (res.ok) {
           showToast(data.message || 'Photo added to website gallery!');
           document.getElementById('gal-title').value = '';
           document.getElementById('gal-desc').value = '';
-          document.getElementById('gal-url').value = '';
           document.getElementById('gal-file').value = '';
           document.getElementById('gal-preview-box').style.display = 'none';
           fetchAdminData();
@@ -1977,7 +2253,7 @@
           showToast(data.error || 'Failed to upload photo', 'error');
         }
       } catch(e) {
-        btn.innerText = 'PUBLISH TO WEBSITE GALLERY →';
+        btn.innerText = 'PUBLISH TO GALLERY →';
         btn.disabled = false;
         showToast('Server connection error', 'error');
       }
