@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08090b" />
   <title>Shape & Shine Coaching Class // Udhana, Surat</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
   <style>
     :root {
@@ -28,9 +29,10 @@
       --yt: #ff0000;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
-    body { background-color: var(--bg-dark); color: var(--text-white); overflow-x: hidden; width: 100vw; }
-    #particle-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-dark); color: var(--text-white); overflow-x: hidden; width: 100%; }
+    #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; z-index: 1; pointer-events: none; }
 
     /* NAVBAR */
     nav {
@@ -196,8 +198,8 @@
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; z-index: 2500; padding: 1.2rem;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; background: rgba(0, 0, 0, 0.85);
+      overscroll-behavior: contain; backdrop-filter: blur(6px); display: none; justify-content: center; align-items: center; z-index: 2500; padding: 1.2rem;
     }
     .modal-box {
       background: #11141a; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 24px; padding: 2.2rem;
@@ -271,12 +273,41 @@
       }
     }
 
+    /* ===== touch + mobile polish ===== */
+    button, a, input, select, textarea, label { touch-action: manipulation; }
+    body.modal-open { overflow: hidden; }
+    .btn-pill:active, .btn-phenom:active { transform: scale(0.96); }
+    @media (hover: none) { .btn-pill:hover, .btn-phenom:hover { transform: none; } }
+
     @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      nav.scrolled { padding: 0.8rem 1.5rem; }
+      nav {
+        padding: calc(0.7rem + env(safe-area-inset-top)) 1rem 0.7rem; flex-wrap: wrap; gap: 0.5rem;
+        backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(8, 9, 11, 0.97);
+      }
+      nav.scrolled { padding: calc(0.55rem + env(safe-area-inset-top)) 1rem 0.55rem; }
+      .brand { font-size: 0.95rem; gap: 8px; }
       .nav-links { display: none; }
-      .hero { padding: 8rem 1.5rem 3rem 1.5rem; }
-      .section { padding: 4rem 1.5rem; }
+      .nav-actions { gap: 0.45rem; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
+      .btn-pill { padding: 0.5rem 0.85rem; font-size: 0.74rem; min-height: 36px; justify-content: center; }
+      .live-badge { padding: 4px 8px; font-size: 0.68rem; }
+      .hero { padding: 8rem 1.2rem 3rem 1.2rem; }
+      .section { padding: 3.2rem 1.2rem; }
+      input, select, textarea { font-size: 16px !important; }
+      .whatsapp-float { bottom: calc(1.2rem + env(safe-area-inset-bottom)); right: 1rem; }
+      #contact > .reveal { padding: 1.5rem 1.2rem !important; backdrop-filter: none !important; }
+
+      /* popups -> bottom sheets */
+      .modal-overlay { align-items: flex-end; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,0.75); }
+      .modal-box {
+        max-width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 24px 24px 0 0; border-bottom: none;
+        padding: 1.5rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom));
+        animation: sheetUp 0.38s cubic-bezier(0.16, 1, 0.3, 1); -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      }
+      .modal-box::before { content: ''; display: block; width: 44px; height: 5px; border-radius: 5px; background: rgba(255,255,255,0.22); margin: -0.5rem auto 1rem; }
+    }
+    @keyframes sheetUp { from { transform: translateY(100%); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } }
+    @media (max-width: 400px) {
+      .brand-sub { display: none; }
     }
   </style>
 </head>
@@ -291,7 +322,7 @@
   <nav>
     <div class="brand">
       <div class="brand-dot"></div>
-      SHAPE & SHINE COACHING
+      SHAPE & SHINE<span class="brand-sub">&nbsp;COACHING</span>
     </div>
     <ul class="nav-links">
       <li><a href="#home">Home</a></li>
@@ -608,32 +639,56 @@
       return digits.length >= 10 ? digits.slice(-10) : digits;
     }
 
-    // THREE.JS PARTICLES
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('particle-canvas').appendChild(renderer.domElement);
+    // THREE.JS PARTICLES (optional background - page keeps working if the CDN is slow/blocked)
+    function initParticles() {
+      if (typeof THREE === 'undefined') return;
+      try {
+        const isMobile = window.innerWidth < 769;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !isMobile, powerPreference: 'low-power' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('particle-canvas').appendChild(renderer.domElement);
 
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(150 * 3);
-    for (let i = 0; i < 450; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 20;
-      positions[i+1] = (Math.random() - 0.5) * 20;
-      positions[i+2] = (Math.random() - 0.5) * 20;
+        const count = isMobile ? 90 : 150;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count * 3; i += 3) {
+          positions[i] = (Math.random() - 0.5) * 20;
+          positions[i+1] = (Math.random() - 0.5) * 20;
+          positions[i+2] = (Math.random() - 0.5) * 20;
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
+        camera.position.z = 8;
+
+        let running = true;
+        function animate() {
+          if (!running) return;
+          requestAnimationFrame(animate);
+          scene.rotation.y += 0.001;
+          renderer.render(scene, camera);
+        }
+        animate();
+        // stop drawing when the tab/app is in background (saves battery)
+        document.addEventListener('visibilitychange', () => {
+          running = !document.hidden;
+          if (running) animate();
+        });
+
+        let lastW = window.innerWidth;
+        window.addEventListener('resize', () => {
+          if (isMobile && window.innerWidth === lastW) return; // ignore address-bar resize on phones
+          lastW = window.innerWidth;
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+      } catch (e) { console.warn('Particles disabled:', e); }
     }
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
-    camera.position.z = 8;
-
-    function animate() { requestAnimationFrame(animate); scene.rotation.y += 0.001; renderer.render(scene, camera); }
-    animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', initParticles);
+    else initParticles();
 
     // SCROLL REVEAL OBSERVER
     function initScrollReveal() {
@@ -1030,6 +1085,28 @@
     loadPublicNotices();
     loadSiteSettings();
     initScrollReveal();
+
+    // popups: lock page scroll while open, tap outside / Esc to close
+    (function () {
+      const closers = { 'auth-modal': () => closeAuthModal(), 'forgot-modal': () => closeForgotModal() };
+      const overlays = document.querySelectorAll('.modal-overlay');
+      const sync = () => document.body.classList.toggle('modal-open', Array.from(overlays).some(o => o.style.display === 'flex'));
+      const mo = new MutationObserver(sync);
+      overlays.forEach(o => {
+        mo.observe(o, { attributes: true, attributeFilter: ['style'] });
+        let down = false;
+        o.addEventListener('pointerdown', e => { down = (e.target === o); });
+        o.addEventListener('click', e => {
+          if (e.target === o && down) { (closers[o.id] || (() => { o.style.display = 'none'; }))(); }
+          down = false;
+        });
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        const open = Array.from(overlays).filter(o => o.style.display === 'flex').pop();
+        if (open) (closers[open.id] || (() => { open.style.display = 'none'; }))();
+      });
+    })();
   </script>
 </body>
 </html>

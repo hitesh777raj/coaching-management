@@ -294,16 +294,8 @@ async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
 
-    // Seed Default Teachers (if table is empty)
-    const tCount = await pool.query('SELECT COUNT(*) as count FROM teachers');
-    if (Number(tCount.rows[0].count) === 0) {
-      await pool.query(`
-        INSERT INTO teachers (name, subject, experience, qualification, photo_data, description) VALUES 
-        ('Prof. Rajesh Sharma', 'Physics & Advanced Mathematics', '12+ Years Exp', 'M.Sc (Physics), B.Ed', 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80', 'Specialist in 10th & 12th Board Science and entrance problem-solving shortcuts.'),
-        ('Dr. Meena Patel', 'Chemistry & Biology', '9+ Years Exp', 'Ph.D, M.Sc (Gold Medalist)', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80', 'Dedicated mentor focusing on conceptual clarity, diagrams and practical memory techniques.'),
-        ('CA Hitesh Agrawal', 'Accountancy & Statistics', '10+ Years Exp', 'Chartered Accountant, M.Com', 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=600&q=80', 'Guiding 11th & 12th Commerce students with practical account balance sheet masterclasses.')
-      `);
-    }
+    // NOTE: No default teachers are seeded. Faculty profiles are added/deleted by the admin only,
+    // so a deleted teacher never comes back after a server restart / Vercel cold start.
 
     // Seed Master Admin (if not present)
     const adminEmail = (process.env.ADMIN_EMAIL || 'admin@shapeandshine.com').toLowerCase().trim();

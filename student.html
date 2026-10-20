@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#08090b" />
   <title>Shape & Shine // Student Dashboard</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
 
   <style>
     :root {
@@ -195,7 +196,7 @@
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85);
+      position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; overscroll-behavior: contain; background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(14px); display: none; justify-content: center; align-items: center; z-index: 3000; padding: 1.5rem;
     }
     .modal-box {
@@ -223,11 +224,37 @@
       #printable-receipt-container { position: absolute; left: 0; top: 0; width: 100%; color: #000 !important; background: #fff !important; }
     }
 
+    /* ===== touch + mobile polish ===== */
+    html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+    button, a, input, select, textarea, label, .cal-cell { touch-action: manipulation; }
+    body.modal-open { overflow: hidden; }
+    .btn-pill:active, button:active { transform: scale(0.97); }
+    @media (hover: none) { .btn-pill:hover { transform: none; } }
+    @keyframes sheetUp { from { transform: translateY(100%); opacity: 0.7; } to { transform: translateY(0); opacity: 1; } }
+
     @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      .container { padding: 6.5rem 1rem 3rem 1rem; }
+      nav {
+        padding: calc(0.7rem + env(safe-area-inset-top)) 1rem 0.7rem; gap: 0.5rem;
+        backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(8, 9, 11, 0.97);
+      }
+      .brand { font-size: 0.95rem; white-space: nowrap; }
+      .nav-actions { gap: 6px !important; flex-shrink: 0; }
+      .btn-pill { padding: 0.5rem 0.85rem; font-size: 0.74rem; min-height: 36px; white-space: nowrap; justify-content: center; }
+      .container { padding: calc(5rem + env(safe-area-inset-top)) 0.9rem 3rem 0.9rem; }
       .grid-dashboard { grid-template-columns: 1fr; }
+      input, select, textarea { font-size: 16px !important; }
+      #toast-container { left: 0.8rem; right: 0.8rem; }
+
+      .modal-overlay { align-items: flex-end; padding: 0; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(0,0,0,0.75); }
+      .modal-box {
+        max-width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 24px 24px 0 0; border-bottom: none;
+        padding: 1.5rem 1.2rem calc(1.5rem + env(safe-area-inset-bottom));
+        animation: sheetUp 0.38s cubic-bezier(0.16, 1, 0.3, 1); -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+      }
+      .modal-box::before { content: ''; display: block; width: 44px; height: 5px; border-radius: 5px; background: rgba(255,255,255,0.22); margin: -0.5rem auto 1rem; }
     }
+    @media (max-width: 480px) { .brand-sub { display: none; } }
+    @media (max-width: 768px) { .info-row { flex-wrap: wrap; gap: 0.4rem 0.9rem; } }
   </style>
 </head>
 <body>
@@ -239,9 +266,9 @@
   <nav>
     <div class="brand">
       <div class="brand-dot"></div>
-      SHAPE & SHINE // STUDENT PORTAL
+      SHAPE & SHINE<span class="brand-sub">&nbsp;// STUDENT PORTAL</span>
     </div>
-    <div style="display:flex; gap:10px;">
+    <div class="nav-actions" style="display:flex; gap:10px;">
       <a href="index.html" class="btn-pill">← HOME</a>
       <button class="btn-pill" onclick="localStorage.clear(); location.href='index.html';">LOGOUT</button>
     </div>
@@ -491,34 +518,47 @@
       setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3500);
     }
 
-    // THREE.JS PARTICLES
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('particle-canvas').appendChild(renderer.domElement);
-
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(150 * 3);
-    for (let i = 0; i < 450; i += 3) {
-      positions[i] = (Math.random() - 0.5) * 20;
-      positions[i+1] = (Math.random() - 0.5) * 20;
-      positions[i+2] = (Math.random() - 0.5) * 20;
+    // THREE.JS PARTICLES (optional - dashboard works even if the CDN is slow/blocked)
+    function initParticles() {
+      if (typeof THREE === 'undefined') return;
+      try {
+        const isMobile = window.innerWidth < 769;
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !isMobile, powerPreference: 'low-power' });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 1.5));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('particle-canvas').appendChild(renderer.domElement);
+        const count = isMobile ? 90 : 150;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(count * 3);
+        for (let i = 0; i < count * 3; i += 3) {
+          positions[i] = (Math.random() - 0.5) * 20;
+          positions[i+1] = (Math.random() - 0.5) * 20;
+          positions[i+2] = (Math.random() - 0.5) * 20;
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
+        camera.position.z = 8;
+        let running = true;
+        function animate() { if (!running) return; requestAnimationFrame(animate); scene.rotation.y += 0.001; renderer.render(scene, camera); }
+        animate();
+        document.addEventListener('visibilitychange', () => { running = !document.hidden; if (running) animate(); });
+        let lastW = window.innerWidth;
+        window.addEventListener('resize', () => {
+          if (isMobile && window.innerWidth === lastW) return;
+          lastW = window.innerWidth;
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+      } catch (e) { console.warn('Particles disabled:', e); }
     }
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    scene.add(new THREE.Points(geometry, new THREE.PointsMaterial({ size: 0.1, color: 0xe8590c, transparent: true, opacity: 0.6 })));
-    camera.position.z = 8;
-
-    function animate() { requestAnimationFrame(animate); scene.rotation.y += 0.001; renderer.render(scene, camera); }
-    animate();
-
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', initParticles);
+    else initParticles();
 
     let prevMessageCount = 0;
+    let lastStudentPayload = '';
 
     async function loadStudentData() {
       try {
@@ -528,7 +568,10 @@
           location.href = 'index.html';
           return;
         }
-        const data = await res.json();
+        const rawText = await res.text();
+        if (rawText === lastStudentPayload) return; // nothing changed -> no re-render
+        lastStudentPayload = rawText;
+        const data = JSON.parse(rawText);
         
         // 1. Profile Info
         const p = data.profile || user;
@@ -862,7 +905,27 @@
     }
 
     loadStudentData();
-    setInterval(loadStudentData, 4000);
+    // refresh every 4s, but not while the app is in background
+    setInterval(() => { if (!document.hidden) loadStudentData(); }, 4000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) loadStudentData(); });
+
+    // popup: lock page scroll while open, tap outside / Esc to close
+    (function () {
+      const overlays = document.querySelectorAll('.modal-overlay');
+      const close = (o) => { if (o.id === 'student-promote-modal') closeStudentPromoteModal(); else o.style.display = 'none'; };
+      const mo = new MutationObserver(() => document.body.classList.toggle('modal-open', Array.from(overlays).some(o => o.style.display === 'flex')));
+      overlays.forEach(o => {
+        mo.observe(o, { attributes: true, attributeFilter: ['style'] });
+        let down = false;
+        o.addEventListener('pointerdown', e => { down = (e.target === o); });
+        o.addEventListener('click', e => { if (e.target === o && down) close(o); down = false; });
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        const open = Array.from(overlays).filter(o => o.style.display === 'flex').pop();
+        if (open) close(open);
+      });
+    })();
 
     async function sendMessage() {
       const input = document.getElementById('chat-input');
