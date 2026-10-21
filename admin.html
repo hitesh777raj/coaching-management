@@ -355,6 +355,15 @@
       .stack-table td > .btn-action, .stack-table td > .att-toggle-btn { width: 100%; justify-content: center; min-height: 40px; }
       .stack-table td div[style*="max-width"] { max-width: 100% !important; }
 
+      /* class-wise financial summary: card per class with labels */
+      .label-table, .label-table tbody, .label-table tr, .label-table td { display: block; width: 100%; }
+      .label-table thead { display: none; }
+      .label-table tr { background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 0.9rem 1rem; margin-bottom: 0.8rem; }
+      .label-table td { border: none; padding: 0.35rem 0; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; text-align: right; }
+      .label-table td::before { content: attr(data-label); color: var(--text-muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; text-align: left; flex-shrink: 0; padding-top: 3px; }
+      .label-table td[data-label="Students Enrolled"] { flex-direction: column; align-items: flex-start; text-align: left; }
+      .label-table td[colspan] { display: block; text-align: center; }
+
       /* attendance controls */
       .att-controls { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; }
       .att-controls select, .att-controls input { grid-column: 1 / -1; width: 100% !important; }
@@ -506,7 +515,7 @@
         <div style="margin-top:1.5rem;">
           <h3 style="font-size:0.95rem; font-weight:800; margin-bottom:0.8rem; color:#fff;">CLASS-WISE DETAILED FINANCIAL SUMMARY</h3>
           <div class="data-table-wrap">
-            <table>
+            <table class="label-table">
               <thead>
                 <tr style="background:#14171d;">
                   <th>Standard / Class</th>
@@ -1179,7 +1188,7 @@
       </div>
       <div style="text-align:right;">
         <div>© 2026 SHAPE & SHINE COACHING. ALL RIGHTS RESERVED.</div>
-        <div style="font-size:0.75rem; margin-top:4px;">Design & Developed By Hitesh Innovations</div>
+        <div style="font-size:0.75rem; margin-top:4px;">Protected by automated database recovery engine.</div>
       </div>
     </div>
   </footer>
@@ -1570,6 +1579,11 @@
       runAnalyticsQuery();
     }
 
+    function escHtml(v) {
+      return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+    let analyticsPieNames = [];
+
     async function runAnalyticsQuery() {
       const stdFilter = document.getElementById('analytics-std-filter')?.value || 'ALL';
 
@@ -1590,6 +1604,7 @@
           stdMap[std] = {
             standard: std,
             student_count: 0,
+            students: [],
             fee_per_student: baseFee,
             total_expected: 0,
             total_collected: 0,
@@ -1599,6 +1614,7 @@
         stdMap[std].student_count += 1;
         const tFee = Math.max(0, Number(s.total_fees || stdMap[std].fee_per_student));
         const pAmt = Math.min(tFee, Math.max(0, Number(s.paid_amount || 0)));
+        stdMap[std].students.push({ name: s.name || 'Unnamed', paid: pAmt >= tFee && tFee > 0 });
 
         stdMap[std].total_expected += tFee;
         stdMap[std].total_collected += pAmt;
@@ -1608,6 +1624,7 @@
 
       Object.keys(stdMap).forEach(k => {
         stdMap[k].total_pending = Math.max(0, stdMap[k].total_expected - stdMap[k].total_collected);
+        stdMap[k].students.sort((a, b) => a.name.localeCompare(b.name));
       });
 
       const statsList = Object.values(stdMap);
@@ -1625,12 +1642,17 @@
       } else {
         tbody.innerHTML = statsList.map(item => `
           <tr>
-            <td><strong style="color:var(--accent-orange);">${item.standard}</strong></td>
-            <td><strong>${item.student_count}</strong> Students</td>
-            <td>₹${item.fee_per_student.toLocaleString()}</td>
-            <td><strong style="color:#fff;">₹${item.total_expected.toLocaleString()}</strong></td>
-            <td style="color:var(--success); font-weight:700;">₹${item.total_collected.toLocaleString()}</td>
-            <td style="color:var(--danger); font-weight:700;">₹${item.total_pending.toLocaleString()}</td>
+            <td data-label="Class"><strong style="color:var(--accent-orange);">${item.standard}</strong></td>
+            <td data-label="Students Enrolled">
+              <div><strong>${item.student_count}</strong> Students</div>
+              <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; max-height:130px; overflow-y:auto;">
+                ${item.students.map(st => `<span style="font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:20px; background:rgba(255,255,255,0.06); border:1px solid var(--border-subtle); white-space:nowrap;"><span style="color:${st.paid ? 'var(--success)' : 'var(--danger)'};">●</span> ${escHtml(st.name)}</span>`).join('')}
+              </div>
+            </td>
+            <td data-label="Fee Per Student">₹${item.fee_per_student.toLocaleString()}</td>
+            <td data-label="Total Expected"><strong style="color:#fff;">₹${item.total_expected.toLocaleString()}</strong></td>
+            <td data-label="Collected" style="color:var(--success); font-weight:700;">₹${item.total_collected.toLocaleString()}</td>
+            <td data-label="Pending" style="color:var(--danger); font-weight:700;">₹${item.total_pending.toLocaleString()}</td>
           </tr>
         `).join('');
       }
@@ -1698,6 +1720,7 @@
       // Chart 3: Pie Chart
       const pieLabels = statsList.map(s => s.standard.replace(' Standard', 'th').replace(' (Board)', ''));
       const pieCounts = statsList.map(s => s.student_count);
+      analyticsPieNames = statsList.map(s => s.students.map(st => st.name));
       const pieColors = ['#e8590c', '#2ed573', '#1e90ff', '#9b59b6', '#f39c12', '#1abc9c', '#e74c3c', '#ff6b81', '#70a1ff', '#2ed573'];
 
       if (studentsPieInstance) {
@@ -1720,7 +1743,10 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } }
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { afterLabel: (ctx) => (analyticsPieNames[ctx.dataIndex] || []).slice(0, 12).map(n => '• ' + n).concat((analyticsPieNames[ctx.dataIndex] || []).length > 12 ? ['+ ' + ((analyticsPieNames[ctx.dataIndex] || []).length - 12) + ' more'] : []) } }
+            }
           }
         });
       }
