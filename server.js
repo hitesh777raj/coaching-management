@@ -43,6 +43,17 @@ pool.on('error', (err) => {
   console.error('Unexpected database client error:', err.message);
 });
 
+// ---------- MEDIUMS (English / Hindi / Gujarati) ----------
+const MEDIUMS = ['English', 'Hindi', 'Gujarati'];
+function normalizeMedium(m) {
+  const v = String(m || '').trim().toLowerCase();
+  if (v === 'hindi') return 'Hindi';
+  if (v === 'gujarati' || v === 'gujrati') return 'Gujarati';
+  if (v === 'english') return 'English';
+  return null;
+}
+function mediumOrEnglish(m) { return normalizeMedium(m) || 'English'; }
+
 // Initialize Database Tables & Default Seeds Safely
 async function initDatabase() {
   try {
@@ -69,7 +80,8 @@ async function initDatabase() {
     // 2. Standard Fees
     await pool.query(`
       CREATE TABLE IF NOT EXISTS standard_fees (
-        standard TEXT PRIMARY KEY,
+        standard TEXT NOT NULL,
+        medium TEXT NOT NULL DEFAULT 'English',
         fee_amount NUMERIC(10,2) NOT NULL,
         default_monthly_fee NUMERIC(10,2) DEFAULT 1500.00
       );
@@ -78,7 +90,8 @@ async function initDatabase() {
     // 3. Batch Timings
     await pool.query(`
       CREATE TABLE IF NOT EXISTS batch_timings (
-        standard TEXT PRIMARY KEY,
+        standard TEXT NOT NULL,
+        medium TEXT NOT NULL DEFAULT 'English',
         morning_batch TEXT DEFAULT '07:00 AM - 09:30 AM',
         evening_batch TEXT DEFAULT '04:00 PM - 07:00 PM',
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -244,6 +257,32 @@ async function initDatabase() {
       );
     `);
 
+    // ---- Medium migration (safe to run on every start) ----
+    // Existing databases had one fee/timing row per standard. Now it is one row per (medium, standard).
+    const migrations = [
+      `ALTER TABLE standard_fees ADD COLUMN IF NOT EXISTS medium TEXT NOT NULL DEFAULT 'English'`,
+      `ALTER TABLE batch_timings ADD COLUMN IF NOT EXISTS medium TEXT NOT NULL DEFAULT 'English'`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS standard_fees_medium_standard_idx ON standard_fees (medium, standard)`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS batch_timings_medium_standard_idx ON batch_timings (medium, standard)`,
+      `ALTER TABLE study_materials ADD COLUMN IF NOT EXISTS medium TEXT DEFAULT 'All'`,
+      `UPDATE users SET medium = 'English' WHERE role != 'admin' AND (medium IS NULL OR medium NOT IN ('English','Hindi','Gujarati'))`
+    ];
+    for (const q of migrations.slice(0, 2)) {
+      try { await pool.query(q); } catch (mErr) { console.error('Migration step skipped:', mErr.message); }
+    }
+    // old databases: drop the old "one row per standard" primary key, whatever its name is
+    for (const tbl of ['standard_fees', 'batch_timings']) {
+      try {
+        const pk = await pool.query(`SELECT conname FROM pg_constraint WHERE conrelid = $1::regclass AND contype = 'p'`, [tbl]);
+        for (const row of pk.rows) {
+          await pool.query(`ALTER TABLE ${tbl} DROP CONSTRAINT "${row.conname}"`);
+        }
+      } catch (mErr) { console.error('PK migration skipped for', tbl, mErr.message); }
+    }
+    for (const q of migrations.slice(2)) {
+      try { await pool.query(q); } catch (mErr) { console.error('Migration step skipped:', mErr.message); }
+    }
+
     // Seed Default Fees
     await pool.query(`
       INSERT INTO standard_fees (standard, fee_amount, default_monthly_fee) VALUES
@@ -261,7 +300,7 @@ async function initDatabase() {
         ('11th Commerce', 20000, 2000),
         ('12th Science (Board)', 30000, 3000),
         ('12th Commerce (Board)', 24000, 2400)
-      ON CONFLICT (standard) DO NOTHING;
+      ON CONFLICT (medium, standard) DO NOTHING;
     `);
 
     // Seed Default Batch Timings
@@ -281,8 +320,20 @@ async function initDatabase() {
         ('11th Commerce', '07:00 AM - 09:30 AM', '04:00 PM - 07:00 PM'),
         ('12th Science (Board)', '07:00 AM - 09:30 AM', '04:00 PM - 07:00 PM'),
         ('12th Commerce (Board)', '07:00 AM - 09:30 AM', '04:00 PM - 07:00 PM')
-      ON CONFLICT (standard) DO NOTHING;
+      ON CONFLICT (medium, standard) DO NOTHING;
     `);
+
+    // Hindi & Gujarati sections start with the same fees/timings as English (admin can change them per medium)
+    for (const med of ['Hindi', 'Gujarati']) {
+      try {
+      await pool.query(`INSERT INTO standard_fees (medium, standard, fee_amount, default_monthly_fee)
+        SELECT $1, standard, fee_amount, default_monthly_fee FROM standard_fees WHERE medium = 'English'
+        ON CONFLICT (medium, standard) DO NOTHING`, [med]);
+      await pool.query(`INSERT INTO batch_timings (medium, standard, morning_batch, evening_batch)
+        SELECT $1, standard, morning_batch, evening_batch FROM batch_timings WHERE medium = 'English'
+        ON CONFLICT (medium, standard) DO NOTHING`, [med]);
+      } catch (cErr) { console.error('Medium seed skipped for', med, cErr.message); }
+    }
 
     // Seed Default Site Settings
     await pool.query(`
@@ -349,6 +400,7 @@ app.get('/api/ping', (req, res) => {
 app.post('/api/register', async (req, res) => {
   try {
     const { name, email, password, standard, phone, payment_plan } = req.body;
+    const medium = normalizeMedium(req.body.medium);
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const cleanPhone = sanitizePhone(phone);
     const passRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,20}$/;
@@ -357,9 +409,10 @@ app.post('/api/register', async (req, res) => {
     if (!cleanPhone || cleanPhone.length !== 10) return res.status(400).json({ error: 'Mobile number must be exactly 10 digits long.' });
     if (!email || !emailRegex.test(email.trim())) return res.status(400).json({ error: 'Please enter a valid email address.' });
     if (!password || !passRegex.test(password)) return res.status(400).json({ error: 'Password must be 6-20 characters long with letters & numbers.' });
+    if (!medium) return res.status(400).json({ error: 'Please select your medium (English / Hindi / Gujarati).' });
     if (!standard) return res.status(400).json({ error: 'Please select a standard.' });
 
-    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1', [standard]);
+    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1 AND medium = $2', [standard, medium]);
     const feeRow = feeRes.rows[0];
     const totalFee = feeRow ? Number(feeRow.fee_amount) : 15000;
     const monthlyFee = feeRow ? Number(feeRow.default_monthly_fee) : 1500;
@@ -367,22 +420,22 @@ app.post('/api/register', async (req, res) => {
     const hashed = bcrypt.hashSync(password, 10);
 
     const insertUser = await pool.query(
-      `INSERT INTO users (name, email, password, standard, phone, total_fees, monthly_fee, payment_plan, paid_amount, fee_status, academic_year)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 0.0, 'Pending', '2026-2027') RETURNING id`,
-      [name.trim(), email.trim().toLowerCase(), hashed, standard, cleanPhone, totalFee, monthlyFee, plan]
+      `INSERT INTO users (name, email, password, standard, medium, phone, total_fees, monthly_fee, payment_plan, paid_amount, fee_status, academic_year)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0.0, 'Pending', '2026-2027') RETURNING id`,
+      [name.trim(), email.trim().toLowerCase(), hashed, standard, medium, cleanPhone, totalFee, monthlyFee, plan]
     );
 
     const newUserId = insertUser.rows[0].id;
     await pool.query(
       `INSERT INTO messages (student_id, sender, message, is_read) VALUES ($1, 'admin', $2, 0)`,
-      [newUserId, `Welcome ${name.trim()} to Shape & Shine! Plan: ${plan} (Course Fee: ₹${totalFee.toLocaleString()}). Feel free to ask any query here.`]
+      [newUserId, `Welcome ${name.trim()} to Shape & Shine! (${standard} - ${medium} Medium) Plan: ${plan} (Course Fee: ₹${totalFee.toLocaleString()}). Feel free to ask any query here.`]
     );
 
-    const token = jwt.sign({ id: newUserId, name, email: email.trim().toLowerCase(), role: 'student', standard }, JWT_SECRET);
+    const token = jwt.sign({ id: newUserId, name, email: email.trim().toLowerCase(), role: 'student', standard, medium }, JWT_SECRET);
     res.json({
       message: 'Registration successful!',
       token,
-      user: { id: newUserId, name, email, role: 'student', standard, fee_status: 'Pending', paid_amount: 0, total_fees: totalFee, payment_plan: plan, monthly_fee: monthlyFee }
+      user: { id: newUserId, name, email, role: 'student', standard, medium, fee_status: 'Pending', paid_amount: 0, total_fees: totalFee, payment_plan: plan, monthly_fee: monthlyFee }
     });
   } catch (err) {
     if (err.code === '23505') {
@@ -406,7 +459,7 @@ app.post('/api/login', async (req, res) => {
     const isValid = bcrypt.compareSync(password, user.password);
     if (!isValid) return res.status(401).json({ error: 'Incorrect password.' });
 
-    const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role, standard: user.standard }, JWT_SECRET);
+    const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role, standard: user.standard, medium: user.medium }, JWT_SECRET);
     res.json({
       message: 'Login successful!',
       token,
@@ -416,6 +469,7 @@ app.post('/api/login', async (req, res) => {
         email: user.email,
         role: user.role,
         standard: user.standard,
+        medium: user.medium,
         fee_status: user.fee_status,
         paid_amount: Number(user.paid_amount),
         total_fees: Number(user.total_fees),
@@ -585,7 +639,7 @@ app.post('/api/student/promote', authenticateToken, async (req, res) => {
       [studentId, student.name, student.standard, to_standard, student.paid_amount, student.academic_year || '2026-2027']
     );
 
-    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1', [to_standard]);
+    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1 AND medium = $2', [to_standard, mediumOrEnglish(student.medium)]);
     const feeRow = feeRes.rows[0];
     const newTotalFee = feeRow ? Number(feeRow.fee_amount) : 15000;
     const newMonthly = feeRow ? Number(feeRow.default_monthly_fee) : 1500;
@@ -624,7 +678,7 @@ app.post('/api/admin/student/promote/:id', authenticateToken, requireAdmin, asyn
       [studentId, student.name, student.standard, to_standard, student.paid_amount, student.academic_year || '2026-2027']
     );
 
-    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1', [to_standard]);
+    const feeRes = await pool.query('SELECT fee_amount, default_monthly_fee FROM standard_fees WHERE standard = $1 AND medium = $2', [to_standard, mediumOrEnglish(student.medium)]);
     const feeRow = feeRes.rows[0];
     const newTotalFee = feeRow ? Number(feeRow.fee_amount) : 15000;
     const newMonthly = feeRow ? Number(feeRow.default_monthly_fee) : 1500;
@@ -737,13 +791,13 @@ app.get('/api/student/data', authenticateToken, async (req, res) => {
     const studentId = Number(req.user.id);
 
     const uRes = await pool.query(
-      `SELECT id, name, email, standard, phone, fee_status, payment_plan, monthly_fee, paid_amount, total_fees, academic_year FROM users WHERE id = $1`,
+      `SELECT id, name, email, standard, medium, phone, fee_status, payment_plan, monthly_fee, paid_amount, total_fees, academic_year FROM users WHERE id = $1`,
       [studentId]
     );
     const profile = uRes.rows[0];
     if (!profile) return res.status(404).json({ error: 'Student not found.' });
 
-    const tRes = await pool.query(`SELECT morning_batch, evening_batch FROM batch_timings WHERE standard = $1`, [profile.standard]);
+    const tRes = await pool.query(`SELECT morning_batch, evening_batch FROM batch_timings WHERE standard = $1 AND medium = $2`, [profile.standard, mediumOrEnglish(profile.medium)]);
     const timings = tRes.rows[0] || { morning_batch: '07:00 AM - 09:30 AM', evening_batch: '04:00 PM - 07:00 PM' };
 
     const aRes = await pool.query(`SELECT date, status FROM attendance WHERE student_id = $1 ORDER BY date DESC`, [studentId]);
@@ -757,7 +811,10 @@ app.get('/api/student/data', authenticateToken, async (req, res) => {
     const matRes = await pool.query(`SELECT * FROM study_materials ORDER BY id DESC`);
     
     const cleanUserStd = (profile.standard || '').toLowerCase().replace(/standard/g, '').replace(/std/g, '').replace(/board/g, '').replace(/[() ]/g, '');
+    const studentMedium = mediumOrEnglish(profile.medium);
     const matchedMaterials = matRes.rows.filter(mat => {
+      // material meant for another medium is hidden
+      if (mat.medium && mat.medium !== 'All' && mat.medium !== studentMedium) return false;
       if (!mat.standard || mat.standard === 'All Standards' || mat.standard.toLowerCase() === 'all') return true;
       const cleanMatStd = mat.standard.toLowerCase().replace(/standard/g, '').replace(/std/g, '').replace(/board/g, '').replace(/[() ]/g, '');
       return cleanMatStd === cleanUserStd || cleanMatStd.includes(cleanUserStd) || cleanUserStd.includes(cleanMatStd) || mat.standard.toLowerCase().trim() === profile.standard.toLowerCase().trim();
@@ -830,9 +887,9 @@ app.get('/api/admin/data', authenticateToken, requireAdmin, async (req, res) => 
     const eventsRes = await pool.query(`SELECT * FROM events ORDER BY id DESC`);
     const inqRes = await pool.query(`SELECT * FROM inquiries ORDER BY id DESC`);
     const msgRes = await pool.query(`SELECT messages.*, users.name as student_name FROM messages JOIN users ON messages.student_id = users.id ORDER BY messages.id DESC`);
-    const matRes = await pool.query(`SELECT id, title, standard, subject, file_link, file_name, CASE WHEN file_data IS NOT NULL AND file_data != '' THEN 1 ELSE 0 END as has_pdf, created_at FROM study_materials ORDER BY id DESC`);
+    const matRes = await pool.query(`SELECT id, title, standard, medium, subject, file_link, file_name, CASE WHEN file_data IS NOT NULL AND file_data != '' THEN 1 ELSE 0 END as has_pdf, created_at FROM study_materials ORDER BY id DESC`);
     const marksRes = await pool.query(`SELECT marks.*, users.name as student_name FROM marks JOIN users ON marks.student_id = users.id ORDER BY marks.id DESC`);
-    const feesRes = await pool.query(`SELECT * FROM standard_fees ORDER BY fee_amount ASC`);
+    const feesRes = await pool.query(`SELECT * FROM standard_fees ORDER BY medium ASC, fee_amount ASC`);
     const timingsRes = await pool.query(`SELECT * FROM batch_timings`);
     const galleryRes = await pool.query(`SELECT * FROM gallery ORDER BY id DESC`);
     const teachersRes = await pool.query(`SELECT * FROM teachers ORDER BY id ASC`);
@@ -888,7 +945,10 @@ app.get('/api/admin/analytics', authenticateToken, requireAdmin, async (req, res
     let periodCollected = 0;
     rRes.rows.forEach(r => { periodCollected += Number(r.amount_paid || 0); });
 
-    const uRes = await pool.query(`SELECT standard, fee_status, paid_amount, total_fees FROM users WHERE role != 'admin'`);
+    const mediumFilter = normalizeMedium(req.query.medium);
+    const uRes = mediumFilter
+      ? await pool.query(`SELECT standard, fee_status, paid_amount, total_fees FROM users WHERE role != 'admin' AND medium = $1`, [mediumFilter])
+      : await pool.query(`SELECT standard, fee_status, paid_amount, total_fees FROM users WHERE role != 'admin'`);
     let totalRevenueExpected = 0;
     let allTimeCollected = 0;
     const standardDistribution = {};
@@ -917,12 +977,15 @@ app.get('/api/admin/analytics', authenticateToken, requireAdmin, async (req, res
 // CSV Export
 app.get('/api/admin/export/students', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await pool.query(`SELECT id, name, email, phone, standard, payment_plan, monthly_fee, fee_status, paid_amount, total_fees, academic_year FROM users WHERE role != 'admin' ORDER BY id ASC`);
-    let csv = 'Roll No,Student Name,Email Address,Phone Number,Standard,Payment Plan,Monthly Fee (INR),Fee Status,Paid Amount (INR),Total Course Fee (INR),Academic Year\n';
+    const exportMedium = normalizeMedium(req.query.medium);
+    const result = exportMedium
+      ? await pool.query(`SELECT id, name, email, phone, standard, medium, payment_plan, monthly_fee, fee_status, paid_amount, total_fees, academic_year FROM users WHERE role != 'admin' AND medium = $1 ORDER BY id ASC`, [exportMedium])
+      : await pool.query(`SELECT id, name, email, phone, standard, medium, payment_plan, monthly_fee, fee_status, paid_amount, total_fees, academic_year FROM users WHERE role != 'admin' ORDER BY id ASC`);
+    let csv = 'Roll No,Student Name,Email Address,Phone Number,Medium,Standard,Payment Plan,Monthly Fee (INR),Fee Status,Paid Amount (INR),Total Course Fee (INR),Academic Year\n';
     result.rows.forEach(r => {
       const total = Number(r.total_fees || 0);
       const paid = Math.min(total, Number(r.paid_amount || 0));
-      csv += `"${r.id}","${r.name}","${r.email}","${r.phone || '-'}","${r.standard}","${r.payment_plan || 'One-Time'}","${r.monthly_fee || 0}","${r.fee_status}","${paid}","${total}","${r.academic_year || '2026-2027'}"\n`;
+      csv += `"${r.id}","${r.name}","${r.email}","${r.phone || '-'}","${r.medium || 'English'}","${r.standard}","${r.payment_plan || 'One-Time'}","${r.monthly_fee || 0}","${r.fee_status}","${paid}","${total}","${r.academic_year || '2026-2027'}"\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv');
@@ -936,7 +999,10 @@ app.get('/api/admin/export/students', authenticateToken, requireAdmin, async (re
 // Bulk Marks
 app.get('/api/admin/marks/students/:standard', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, name, standard, phone FROM users WHERE standard = $1 AND role != \'admin\' ORDER BY name ASC', [req.params.standard]);
+    const mk = normalizeMedium(req.query.medium);
+    const result = mk
+      ? await pool.query('SELECT id, name, standard, medium, phone FROM users WHERE standard = $1 AND medium = $2 AND role != \'admin\' ORDER BY name ASC', [req.params.standard, mk])
+      : await pool.query('SELECT id, name, standard, medium, phone FROM users WHERE standard = $1 AND role != \'admin\' ORDER BY name ASC', [req.params.standard]);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch students for marks.' });
@@ -972,7 +1038,10 @@ app.post('/api/admin/marks/bulk', authenticateToken, requireAdmin, async (req, r
 app.get('/api/admin/attendance/:standard/:date', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { standard, date } = req.params;
-    const sRes = await pool.query('SELECT id, name, phone, standard FROM users WHERE standard = $1 AND role != \'admin\' ORDER BY name ASC', [standard]);
+    const am = normalizeMedium(req.query.medium);
+    const sRes = am
+      ? await pool.query('SELECT id, name, phone, standard FROM users WHERE standard = $1 AND medium = $2 AND role != \'admin\' ORDER BY name ASC', [standard, am])
+      : await pool.query('SELECT id, name, phone, standard FROM users WHERE standard = $1 AND role != \'admin\' ORDER BY name ASC', [standard]);
     const aRes = await pool.query('SELECT student_id, status FROM attendance WHERE date = $1', [date]);
 
     const statusMap = {};
@@ -1027,12 +1096,13 @@ app.get('/api/batch-timings', async (req, res) => {
 app.put('/api/admin/batch-timings', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { standard, morning_batch, evening_batch } = req.body;
+    const medium = mediumOrEnglish(req.body.medium);
     await pool.query(
-      `INSERT INTO batch_timings (standard, morning_batch, evening_batch, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
-       ON CONFLICT (standard) DO UPDATE SET morning_batch = EXCLUDED.morning_batch, evening_batch = EXCLUDED.evening_batch, updated_at = CURRENT_TIMESTAMP`,
-      [standard, morning_batch.trim(), evening_batch.trim()]
+      `INSERT INTO batch_timings (medium, standard, morning_batch, evening_batch, updated_at) VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+       ON CONFLICT (medium, standard) DO UPDATE SET morning_batch = EXCLUDED.morning_batch, evening_batch = EXCLUDED.evening_batch, updated_at = CURRENT_TIMESTAMP`,
+      [medium, standard, morning_batch.trim(), evening_batch.trim()]
     );
-    res.json({ message: `Batch timings updated for ${standard}!` });
+    res.json({ message: `Batch timings updated for ${standard} (${medium} Medium)!` });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update batch timings.' });
   }
@@ -1157,6 +1227,7 @@ app.post('/api/admin/reply', authenticateToken, requireAdmin, async (req, res) =
 app.put('/api/admin/student/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, email, standard, phone, fee_status, paid_amount, total_fees, payment_plan, monthly_fee } = req.body;
+    const newMedium = normalizeMedium(req.body.medium);
     const tFees = Math.max(0, Number(total_fees) || 0);
     let pAmount = Math.max(0, Number(paid_amount) || 0);
 
@@ -1171,8 +1242,8 @@ app.put('/api/admin/student/:id', authenticateToken, requireAdmin, async (req, r
     const cleanPhone = sanitizePhone(phone);
 
     await pool.query(
-      `UPDATE users SET name = $1, email = $2, standard = $3, phone = $4, fee_status = $5, paid_amount = $6, total_fees = $7, payment_plan = $8, monthly_fee = $9 WHERE id = $10`,
-      [name ? name.trim() : '', email ? email.trim().toLowerCase() : '', standard, cleanPhone, finalStatus, pAmount, tFees, payment_plan || 'One-Time', mFee, studentId]
+      `UPDATE users SET name = $1, email = $2, standard = $3, phone = $4, fee_status = $5, paid_amount = $6, total_fees = $7, payment_plan = $8, monthly_fee = $9, medium = COALESCE($11, medium) WHERE id = $10`,
+      [name ? name.trim() : '', email ? email.trim().toLowerCase() : '', standard, cleanPhone, finalStatus, pAmount, tFees, payment_plan || 'One-Time', mFee, studentId, newMedium]
     );
 
     const notifMsg = `📢 Fee Status Notice: Your fee status is "${finalStatus}". Paid: ₹${pAmount.toLocaleString()} / Total: ₹${tFees.toLocaleString()} (Plan: ${payment_plan || 'One-Time'}). Thank you!`;
@@ -1188,21 +1259,22 @@ app.put('/api/admin/student/:id', authenticateToken, requireAdmin, async (req, r
 app.put('/api/admin/standard-fee', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { standard, fee_amount, default_monthly_fee, update_existing } = req.body;
+    const medium = mediumOrEnglish(req.body.medium);
     const numFee = Number(fee_amount);
     const numMonthly = Number(default_monthly_fee) || Math.round(numFee / 10);
     if (!standard || isNaN(numFee) || numFee <= 0) return res.status(400).json({ error: 'Valid standard & fee required.' });
 
     await pool.query(
-      `INSERT INTO standard_fees (standard, fee_amount, default_monthly_fee) VALUES ($1, $2, $3)
-       ON CONFLICT (standard) DO UPDATE SET fee_amount = EXCLUDED.fee_amount, default_monthly_fee = EXCLUDED.default_monthly_fee`,
-      [standard, numFee, numMonthly]
+      `INSERT INTO standard_fees (medium, standard, fee_amount, default_monthly_fee) VALUES ($1, $2, $3, $4)
+       ON CONFLICT (medium, standard) DO UPDATE SET fee_amount = EXCLUDED.fee_amount, default_monthly_fee = EXCLUDED.default_monthly_fee`,
+      [medium, standard, numFee, numMonthly]
     );
 
     if (update_existing) {
-      await pool.query(`UPDATE users SET total_fees = $1, monthly_fee = $2 WHERE standard = $3 AND role != 'admin'`, [numFee, numMonthly, standard]);
-      res.json({ message: `Updated base fee (₹${numFee}) & monthly fee (₹${numMonthly}) for ${standard}!` });
+      await pool.query(`UPDATE users SET total_fees = $1, monthly_fee = $2 WHERE standard = $3 AND medium = $4 AND role != 'admin'`, [numFee, numMonthly, standard, medium]);
+      res.json({ message: `Updated base fee (₹${numFee}) & monthly fee (₹${numMonthly}) for ${standard} (${medium} Medium)!` });
     } else {
-      res.json({ message: `Updated base fee for ${standard}!` });
+      res.json({ message: `Updated base fee for ${standard} (${medium} Medium)!` });
     }
   } catch (err) {
     res.status(500).json({ error: 'Failed to update standard fee.' });
@@ -1239,8 +1311,8 @@ app.post('/api/admin/materials', authenticateToken, requireAdmin, async (req, re
     if (!file_link && !file_data) return res.status(400).json({ error: 'Please upload a PDF file or provide a web link.' });
 
     await pool.query(
-      `INSERT INTO study_materials (title, standard, subject, file_link, file_data, file_name) VALUES ($1, $2, $3, $4, $5, $6)`,
-      [title.trim(), standard, subject.trim(), file_link ? file_link.trim() : '', file_data || '', file_name || '']
+      `INSERT INTO study_materials (title, standard, subject, file_link, file_data, file_name, medium) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [title.trim(), standard, subject.trim(), file_link ? file_link.trim() : '', file_data || '', file_name || '', normalizeMedium(req.body.medium) || 'All']
     );
     res.json({ message: 'Study material uploaded successfully!' });
   } catch (err) {

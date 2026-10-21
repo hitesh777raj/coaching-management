@@ -444,6 +444,14 @@
         <form id="inquiry-form" onsubmit="event.preventDefault(); submitInquiry();">
           <div class="form-group"><label class="form-label">Parent's Name</label><input type="text" id="inq-parent" class="input-field" placeholder="Mr. Rajeshbhai" required /></div>
           <div class="form-group"><label class="form-label">Student's Name</label><input type="text" id="inq-student" class="input-field" placeholder="Aarav" required /></div>
+          <div class="form-group"><label class="form-label">Select Medium</label>
+            <select id="inq-medium" class="input-field" required>
+          <option value="" selected disabled>-- Choose Medium --</option>
+          <option value="English">English Medium</option>
+          <option value="Hindi">Hindi Medium (हिन्दी माध्यम)</option>
+          <option value="Gujarati">Gujarati Medium (ગુજરાતી માધ્યમ)</option>
+            </select>
+          </div>
           <div class="form-group">
             <label class="form-label">Select Standard & Stream</label>
             <select id="inq-std" class="input-field">
@@ -516,6 +524,16 @@
         <label class="form-label">CONTACT PHONE</label>
         <input type="tel" id="auth-phone" class="input-field" placeholder="9824528709" />
         <div class="input-hint">10 digits mobile number</div>
+      </div>
+
+      <div class="form-group" id="group-medium" style="display: none;">
+        <label class="form-label">SELECT MEDIUM</label>
+        <select id="auth-medium" class="input-field">
+          <option value="" selected disabled>-- Choose Medium --</option>
+          <option value="English">English Medium</option>
+          <option value="Hindi">Hindi Medium (हिन्दी माध्यम)</option>
+          <option value="Gujarati">Gujarati Medium (ગુજરાતી માધ્યમ)</option>
+        </select>
       </div>
 
       <div class="form-group" id="group-standard" style="display: none;">
@@ -881,10 +899,16 @@
       const standard = document.getElementById('inq-std').value;
       const rawPhone = document.getElementById('inq-phone').value;
       const phone = cleanIndianPhone(rawPhone);
-      const message = document.getElementById('inq-msg').value.trim();
+      const inqMedium = document.getElementById('inq-medium').value;
+      const rawMessage = document.getElementById('inq-msg').value.trim();
+      const message = `[${inqMedium || 'Medium not chosen'} Medium] ` + rawMessage;
 
       if(!parent_name || !student_name || !phone) {
         showToast('Please fill all mandatory fields', 'error');
+        return;
+      }
+      if(!inqMedium) {
+        showToast('Please select the medium (English / Hindi / Gujarati)', 'error');
         return;
       }
       if(phone.length !== 10) {
@@ -917,6 +941,7 @@
       document.getElementById('modal-title').innerText = isRegister ? 'Student Registration' : 'Student Sign In';
       document.getElementById('group-name').style.display = isRegister ? 'block' : 'none';
       document.getElementById('group-phone').style.display = isRegister ? 'block' : 'none';
+      document.getElementById('group-medium').style.display = isRegister ? 'block' : 'none';
       document.getElementById('group-standard').style.display = isRegister ? 'block' : 'none';
       document.getElementById('group-plan').style.display = isRegister ? 'block' : 'none';
       document.getElementById('auth-toggle-msg').innerText = isRegister ? 'Already registered?' : 'New student?';
@@ -936,6 +961,7 @@
       const name = document.getElementById('auth-name').value.trim();
       const rawPhone = document.getElementById('auth-phone').value;
       const phone = cleanIndianPhone(rawPhone);
+      const medium = document.getElementById('auth-medium').value;
       const standard = document.getElementById('auth-standard').value;
       const payment_plan = document.getElementById('auth-plan').value;
 
@@ -949,6 +975,10 @@
         }
         if (!phone || phone.length !== 10) {
           showToast('Mobile number must be exactly 10 digits', 'error');
+          return;
+        }
+        if (!medium) {
+          showToast('Please select your medium (English / Hindi / Gujarati)', 'error');
           return;
         }
       }
@@ -969,7 +999,7 @@
       }
 
       const endpoint = isRegister ? '/api/register' : '/api/login';
-      const body = isRegister ? { name, email, password, standard, phone, payment_plan } : { email, password };
+      const body = isRegister ? { name, email, password, standard, medium, phone, payment_plan } : { email, password };
 
       try {
         const res = await fetch(endpoint, {

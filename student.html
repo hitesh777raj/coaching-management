@@ -295,7 +295,8 @@
           </div>
           <div class="info-row"><span class="info-label">Student Name</span><span class="info-val" id="profile-name">-</span></div>
           <div class="info-row"><span class="info-label">Email Address</span><span class="info-val" id="profile-email">-</span></div>
-          <div class="info-row"><span class="info-label">Current Standard</span><span class="info-val" id="profile-std" style="color:var(--accent-orange);">-</span></div>
+                    <div class="info-row"><span class="info-label">Medium</span><span class="info-val" id="profile-medium" style="color:#6cb2ff;">-</span></div>
+<div class="info-row"><span class="info-label">Current Standard</span><span class="info-val" id="profile-std" style="color:var(--accent-orange);">-</span></div>
           <div class="info-row"><span class="info-label">Academic Session</span><span class="info-val" id="profile-session" style="color:#fff;">2026-2027</span></div>
           <div class="info-row"><span class="info-label">Payment Plan</span><span class="info-val" id="profile-plan" style="color:#2ed573;">-</span></div>
           <div class="info-row"><span class="info-label">Total Course Fee</span><span class="info-val" id="profile-total">-</span></div>
@@ -398,7 +399,7 @@
         <!-- 5. 1-ON-1 MESSAGES WITH ADMIN -->
         <div class="dash-card stagger-5" id="chat-dash-card">
           <div class="dash-card-title">
-            <span>💬 Direct Messages With Vishal Sir</span>
+            <span>💬 Direct Messages with Admin</span>
             <span id="student-unread-badge" class="unread-pill-dot" style="display:none;">● * NEW MESSAGE</span>
           </div>
           <div class="chat-box" id="chat-messages" onclick="markStudentMessagesRead()">
@@ -495,6 +496,7 @@
         document.getElementById('profile-name').innerText = user.name || '-';
         document.getElementById('profile-email').innerText = user.email || '-';
         document.getElementById('profile-std').innerText = user.standard || '-';
+        document.getElementById('profile-medium').innerText = user.medium ? user.medium + ' Medium' : '-';
         document.getElementById('profile-session').innerText = user.academic_year || '2026-2027';
         document.getElementById('profile-plan').innerText = user.payment_plan === 'Monthly' ? `Monthly (₹${(user.monthly_fee || 1500).toLocaleString()}/mo)` : 'One-Time Course Fee';
         document.getElementById('profile-total').innerText = `₹${(user.total_fees || 15000).toLocaleString()}`;
@@ -580,6 +582,7 @@
           document.getElementById('profile-name').innerText = p.name;
           document.getElementById('profile-email').innerText = p.email;
           document.getElementById('profile-std').innerText = p.standard;
+          document.getElementById('profile-medium').innerText = (p.medium || 'English') + ' Medium';
           document.getElementById('profile-session').innerText = p.academic_year || '2026-2027';
           document.getElementById('profile-plan').innerText = p.payment_plan === 'Monthly' ? `Monthly (₹${(p.monthly_fee || 1500).toLocaleString()}/mo)` : 'One-Time Course Fee';
           document.getElementById('profile-total').innerText = `₹${(p.total_fees || 15000).toLocaleString()}`;

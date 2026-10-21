@@ -245,6 +245,28 @@
     }
 
 
+    /* ===== MEDIUM SWITCHER (English / Hindi / Gujarati) ===== */
+    .medium-bar {
+      display: none; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 1.4rem;
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 0.6rem 0.7rem;
+    }
+    .medium-bar-label { font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; color: var(--text-muted); padding: 0 0.4rem; }
+    .medium-pill {
+      background: transparent; border: 1px solid var(--border-subtle); color: var(--text-muted); font-weight: 800; font-size: 0.85rem;
+      padding: 0.6rem 1.1rem; border-radius: 40px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;
+    }
+    .medium-pill.active { background: var(--accent-orange); border-color: var(--accent-orange); color: #fff; box-shadow: 0 6px 18px rgba(232,89,12,0.35); }
+    .medium-tag {
+      display: inline-block; font-size: 0.68rem; font-weight: 800; padding: 2px 9px; border-radius: 20px; margin-top: 4px;
+      background: rgba(30,144,255,0.12); color: #6cb2ff; border: 1px solid rgba(30,144,255,0.3);
+    }
+    @media (max-width: 768px) {
+      .medium-bar { gap: 6px; padding: 0.5rem; border-radius: 16px; }
+      .medium-bar-label { flex: 1 0 100%; padding: 0.1rem 0.4rem 0; }
+      .medium-pill { flex: 1 1 0; justify-content: center; padding: 0.6rem 0.4rem; font-size: 0.82rem; min-height: 40px; white-space: nowrap; }
+      .medium-pill .m-sub { display: none; }
+    }
+
     /* ============================================================
        PERFORMANCE + TOUCH RESPONSIVENESS
        ============================================================ */
@@ -413,6 +435,9 @@
   </header>
 
   <main class="admin-container">
+
+    <!-- MEDIUM SWITCHER -->
+    <div id="medium-bar" class="medium-bar"></div>
     
     <!-- TAB 1: DASHBOARD & LIVE REVENUE ANALYTICS -->
     <div id="tab-dashboard" class="tab-content active">
@@ -447,6 +472,15 @@
 
         <!-- DATE PICKER & STANDARD FILTER BAR -->
         <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:16px; padding:1.2rem; margin-bottom:1.8rem; display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:160px;">
+            <label class="input-label">Filter by Medium</label>
+            <select id="analytics-medium-filter" onchange="runAnalyticsQuery()">
+              <option value="ALL">All Mediums</option>
+              <option value="English">English Medium</option>
+              <option value="Hindi">Hindi Medium (हिन्दी)</option>
+              <option value="Gujarati">Gujarati Medium (ગુજરાતી)</option>
+            </select>
+          </div>
           <div style="flex:1; min-width:200px;">
             <label class="input-label">Filter by Standard</label>
             <select id="analytics-std-filter" onchange="runAnalyticsQuery()"></select>
@@ -561,7 +595,7 @@
       <section class="panel-card">
         <div class="panel-header-row">
           <div>
-            <h2 class="panel-title" style="margin-bottom:0.25rem;"><span>●</span> STUDENT DIRECTORY</h2>
+            <h2 class="panel-title" style="margin-bottom:0.25rem;"><span>●</span> STUDENT DIRECTORY <span id="dir-medium-tag" class="medium-tag" style="vertical-align:middle;"></span></h2>
             <p style="font-size:0.82rem; color:var(--text-muted); margin:0;">Manage student accounts, fees, receipts, direct WhatsApp alerts, and class promotions</p>
           </div>
           <div class="search-tools" style="display:flex; gap:10px; align-items:center;">
@@ -810,6 +844,15 @@
           <form onsubmit="event.preventDefault(); uploadMaterial();">
             <div class="input-group"><label class="input-label">Title / Chapter Name</label><input type="text" id="mat-title" placeholder="Chapter 1: Chemical Reactions" required /></div>
             <div class="input-group">
+              <label class="input-label">Target Medium</label>
+              <select id="mat-medium">
+                <option value="All">All Mediums</option>
+                <option value="English">English Medium</option>
+                <option value="Hindi">Hindi Medium (हिन्दी)</option>
+                <option value="Gujarati">Gujarati Medium (ગુજરાતી)</option>
+              </select>
+            </div>
+            <div class="input-group">
               <label class="input-label">Target Standard</label>
               <select id="mat-std" required></select>
             </div>
@@ -1029,6 +1072,14 @@
       <div class="input-group"><label class="input-label">Email Address</label><input type="email" id="edit-email" required /></div>
       <div class="input-group"><label class="input-label">Contact Phone</label><input type="text" id="edit-phone" maxlength="15" /></div>
       <div class="input-group">
+        <label class="input-label">Medium</label>
+        <select id="edit-medium">
+          <option value="English">English Medium</option>
+          <option value="Hindi">Hindi Medium (हिन्दी)</option>
+          <option value="Gujarati">Gujarati Medium (ગુજરાતી)</option>
+        </select>
+      </div>
+      <div class="input-group">
         <label class="input-label">Standard & Stream</label>
         <select id="edit-std"></select>
       </div>
@@ -1188,7 +1239,7 @@
       </div>
       <div style="text-align:right;">
         <div>© 2026 SHAPE & SHINE COACHING. ALL RIGHTS RESERVED.</div>
-        <div style="font-size:0.75rem; margin-top:4px;">Protected by automated database recovery engine.</div>
+        <div style="font-size:0.75rem; margin-top:4px;">Design & Developed By Hitesh Innovations</div>
       </div>
     </div>
   </footer>
@@ -1270,6 +1321,49 @@
     );
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
+    // ---------- MEDIUM (English / Hindi / Gujarati) ----------
+    const MEDIUM_ORDER = ['English', 'Hindi', 'Gujarati'];
+    const MEDIUM_LABELS = { English: 'English', Hindi: 'हिन्दी<span class="m-sub"> Hindi</span>', Gujarati: 'ગુજરાતી<span class="m-sub"> Gujarati</span>' };
+    const MEDIUM_TABS = ['students', 'attendance', 'timings', 'fees-setup', 'notices', 'materials'];
+    let currentMedium = (() => {
+      try { const v = localStorage.getItem('adm_medium'); return MEDIUM_ORDER.includes(v) ? v : 'English'; } catch (e) { return 'English'; }
+    })();
+    const medOf = (s) => (s && s.medium) || 'English';
+    const studentsInMedium = () => cachedStudents.filter(s => medOf(s) === currentMedium);
+
+    function renderMediumBar() {
+      const bar = document.getElementById('medium-bar');
+      if (!bar) return;
+      bar.innerHTML = `<span class="medium-bar-label">🎓 MEDIUM</span>` + MEDIUM_ORDER.map(m => {
+        const count = cachedStudents.filter(s => medOf(s) === m).length;
+        return `<button type="button" class="medium-pill ${m === currentMedium ? 'active' : ''}" onclick="setMedium('${m}')">${MEDIUM_LABELS[m]} <span class="std-count-badge">${count}</span></button>`;
+      }).join('');
+      const tag = document.getElementById('dir-medium-tag');
+      if (tag) tag.innerText = currentMedium + ' Medium';
+    }
+
+    function updateMediumBarVisibility(tabId) {
+      const bar = document.getElementById('medium-bar');
+      if (bar) bar.style.display = MEDIUM_TABS.includes(tabId) ? 'flex' : 'none';
+    }
+
+    function setMedium(m) {
+      if (!MEDIUM_ORDER.includes(m) || m === currentMedium) return;
+      currentMedium = m;
+      try { localStorage.setItem('adm_medium', m); } catch (e) {}
+      selectedStandardFilter = 'ALL';
+      const matSel = document.getElementById('mat-medium');
+      if (matSel) matSel.value = m;
+      renderMediumBar();
+      Object.keys(renderedTabVersion).forEach(k => delete renderedTabVersion[k]);
+      if (currentTab === 'attendance') loadAttendanceList();
+      else renderTab(currentTab);
+      if (currentTab === 'notices') {
+        const bs = document.getElementById('bulk-marks-std');
+        if (bs && bs.value) loadStudentsForBulkMarks();
+      }
+    }
+
     function renderTab(tabId) {
       if (!lastData || renderedTabVersion[tabId] === dataVersion) return;
       renderedTabVersion[tabId] = dataVersion;
@@ -1309,7 +1403,7 @@
           document.getElementById('materials-tbody').innerHTML = (data.materials || []).map(mat => `
           <tr>
             <td><strong>${mat.title}</strong><div style="font-size:0.75rem; color:var(--text-muted);">${mat.subject}</div></td>
-            <td><span style="color:var(--accent-orange); font-weight:700;">${mat.standard}</span></td>
+            <td><span style="color:var(--accent-orange); font-weight:700;">${mat.standard}</span><div><span class="medium-tag">${(mat.medium && mat.medium !== 'All') ? mat.medium + ' Medium' : 'All Mediums'}</span></div></td>
             <td>${mat.has_pdf ? '📄 PDF Document' : '🔗 Web Link'}</td>
             <td><button class="btn-action btn-delete" onclick="promptDeleteMaterial(${mat.id})">Delete</button></td>
           </tr>
@@ -1326,6 +1420,7 @@
 
     function switchTab(tabId, btnElement = null) {
       currentTab = tabId;
+      updateMediumBarVisibility(tabId);
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
@@ -1408,12 +1503,13 @@
         }
 
         populateStandardDropdowns();
+        renderMediumBar();
 
         // student dropdown for new chat: rebuild only if the student list really changed
-        const selectKey = cachedStudents.map(s => `${s.id}|${s.name}|${s.standard}`).join(';');
+        const selectKey = cachedStudents.map(s => `${s.id}|${s.name}|${s.standard}|${medOf(s)}`).join(';');
         if (selectKey !== lastStudentSelectKey) {
           lastStudentSelectKey = selectKey;
-          document.getElementById('new-chat-student-select').innerHTML = `<option value="">+ Choose Student</option>` + cachedStudents.map(s => `<option value="${s.id}">${s.name} (${s.standard})</option>`).join('');
+          document.getElementById('new-chat-student-select').innerHTML = `<option value="">+ Choose Student</option>` + cachedStudents.map(s => `<option value="${s.id}">${s.name} (${s.standard}, ${medOf(s)})</option>`).join('');
         }
 
         if (!document.getElementById('att-select-date').value) {
@@ -1428,6 +1524,9 @@
         console.error(e);
       }
     }
+
+    updateMediumBarVisibility('dashboard');
+    { const _ms = document.getElementById('mat-medium'); if (_ms) _ms.value = currentMedium; }
 
     // First load (Chart.js is deferred, so wait for the page scripts to be ready)
     if (document.readyState === 'loading') {
@@ -1587,9 +1686,13 @@
     async function runAnalyticsQuery() {
       const stdFilter = document.getElementById('analytics-std-filter')?.value || 'ALL';
 
+      const mediumFilter = document.getElementById('analytics-medium-filter')?.value || 'ALL';
       let studentsToAnalyze = cachedStudents;
+      if (mediumFilter !== 'ALL') {
+        studentsToAnalyze = studentsToAnalyze.filter(s => medOf(s) === mediumFilter);
+      }
       if (stdFilter !== 'ALL') {
-        studentsToAnalyze = cachedStudents.filter(s => s.standard === stdFilter);
+        studentsToAnalyze = studentsToAnalyze.filter(s => s.standard === stdFilter);
       }
 
       const stdMap = {};
@@ -1598,11 +1701,14 @@
 
       studentsToAnalyze.forEach(s => {
         const std = s.standard || 'General';
-        if (!stdMap[std]) {
-          const feeObj = cachedStandardFees.find(f => f.standard === std);
+        const med = medOf(s);
+        const key = med + '|' + std;
+        if (!stdMap[key]) {
+          const feeObj = cachedStandardFees.find(f => f.standard === std && (f.medium || 'English') === med);
           const baseFee = feeObj ? Number(feeObj.fee_amount) : Number(s.total_fees || 15000);
-          stdMap[std] = {
+          stdMap[key] = {
             standard: std,
+            medium: med,
             student_count: 0,
             students: [],
             fee_per_student: baseFee,
@@ -1611,13 +1717,13 @@
             total_pending: 0
           };
         }
-        stdMap[std].student_count += 1;
-        const tFee = Math.max(0, Number(s.total_fees || stdMap[std].fee_per_student));
+        stdMap[key].student_count += 1;
+        const tFee = Math.max(0, Number(s.total_fees || stdMap[key].fee_per_student));
         const pAmt = Math.min(tFee, Math.max(0, Number(s.paid_amount || 0)));
-        stdMap[std].students.push({ name: s.name || 'Unnamed', paid: pAmt >= tFee && tFee > 0 });
+        stdMap[key].students.push({ name: s.name || 'Unnamed', paid: pAmt >= tFee && tFee > 0 });
 
-        stdMap[std].total_expected += tFee;
-        stdMap[std].total_collected += pAmt;
+        stdMap[key].total_expected += tFee;
+        stdMap[key].total_collected += pAmt;
         grandExpected += tFee;
         grandCollected += pAmt;
       });
@@ -1627,7 +1733,11 @@
         stdMap[k].students.sort((a, b) => a.name.localeCompare(b.name));
       });
 
-      const statsList = Object.values(stdMap);
+      const statsList = Object.values(stdMap).sort((a, b) =>
+        (MEDIUM_ORDER.indexOf(a.medium) - MEDIUM_ORDER.indexOf(b.medium)) ||
+        (ALL_STANDARDS.indexOf(a.standard) - ALL_STANDARDS.indexOf(b.standard)));
+      const medAbbr = { English: 'EN', Hindi: 'HI', Gujarati: 'GU' };
+      const shortLbl = (s) => s.standard.replace(' Standard', 'th').replace(' (Board)', '') + (mediumFilter === 'ALL' ? ' · ' + medAbbr[s.medium] : '');
       const grandPending = Math.max(0, grandExpected - grandCollected);
 
       // KPI Numbers
@@ -1642,7 +1752,7 @@
       } else {
         tbody.innerHTML = statsList.map(item => `
           <tr>
-            <td data-label="Class"><strong style="color:var(--accent-orange);">${item.standard}</strong></td>
+            <td data-label="Class"><div><strong style="color:var(--accent-orange);">${item.standard}</strong><div><span class="medium-tag">${item.medium} Medium</span></div></div></td>
             <td data-label="Students Enrolled">
               <div><strong>${item.student_count}</strong> Students</div>
               <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; max-height:130px; overflow-y:auto;">
@@ -1685,7 +1795,7 @@
       }
 
       // Chart 2: Bar Chart
-      const barLabels = statsList.map(s => s.standard.replace(' Standard', 'th').replace(' (Board)', ''));
+      const barLabels = statsList.map(shortLbl);
       const barExpected = statsList.map(s => s.total_expected);
       const barCollected = statsList.map(s => s.total_collected);
 
@@ -1718,7 +1828,7 @@
       }
 
       // Chart 3: Pie Chart
-      const pieLabels = statsList.map(s => s.standard.replace(' Standard', 'th').replace(' (Board)', ''));
+      const pieLabels = statsList.map(shortLbl);
       const pieCounts = statsList.map(s => s.student_count);
       analyticsPieNames = statsList.map(s => s.students.map(st => st.name));
       const pieColors = ['#e8590c', '#2ed573', '#1e90ff', '#9b59b6', '#f39c12', '#1abc9c', '#e74c3c', '#ff6b81', '#70a1ff', '#2ed573'];
@@ -1782,7 +1892,9 @@
     async function exportStudentsCsv() {
       try {
         showToast('Preparing Excel (CSV) report...');
-        const res = await fetch('/api/admin/export/students', {
+        const expMedium = currentTab === 'students' ? currentMedium : (document.getElementById('analytics-medium-filter')?.value || 'ALL');
+        const expQuery = expMedium && expMedium !== 'ALL' ? `?medium=${encodeURIComponent(expMedium)}` : '';
+        const res = await fetch('/api/admin/export/students' + expQuery, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) {
@@ -1793,7 +1905,7 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'ShapeAndShine_Students_Report.csv';
+        a.download = expMedium && expMedium !== 'ALL' ? `ShapeAndShine_${expMedium}_Medium_Students.csv` : 'ShapeAndShine_Students_Report.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1852,7 +1964,7 @@
               <span>${s.name}</span>
               ${hasUnread ? '<span class="unread-star-badge">● * NEW</span>' : ''}
             </div>
-            <div class="u-std">${s.standard}</div>
+            <div class="u-std">${s.standard} • ${medOf(s)}</div>
             <div class="u-preview">${lastMsg ? (lastMsg.sender === 'admin' ? 'You: ' : '') + lastMsg.message : 'No messages yet...'}</div>
           </div>
         `;
@@ -1874,7 +1986,7 @@
       if (!s) return;
 
       document.getElementById('active-chat-name').innerText = s.name;
-      document.getElementById('active-chat-std').innerText = `${s.standard} • ${s.email}`;
+      document.getElementById('active-chat-std').innerText = `${s.standard} (${medOf(s)} Medium) • ${s.email}`;
       document.getElementById('active-chat-phone').innerText = s.phone ? `📞 ${s.phone}` : '';
       document.getElementById('composer-area').style.display = 'flex';
 
@@ -2289,7 +2401,7 @@
       }
 
       try {
-        const res = await fetch(`/api/admin/marks/students/${encodeURIComponent(std)}`, {
+        const res = await fetch(`/api/admin/marks/students/${encodeURIComponent(std)}?medium=${encodeURIComponent(currentMedium)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         currentBulkMarksStudents = await res.json();
@@ -2297,7 +2409,7 @@
         if (currentBulkMarksStudents.length === 0) {
           sheetContainer.style.display = 'none';
           placeholder.style.display = 'block';
-          placeholder.innerText = `No students enrolled in ${std} yet.`;
+          placeholder.innerText = `No students enrolled in ${std} (${currentMedium} Medium) yet.`;
           return;
         }
 
@@ -2604,7 +2716,7 @@
       if (!std || !date) return;
 
       try {
-        const res = await fetch(`/api/admin/attendance/${encodeURIComponent(std)}/${date}`, {
+        const res = await fetch(`/api/admin/attendance/${encodeURIComponent(std)}/${date}?medium=${encodeURIComponent(currentMedium)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -2703,14 +2815,14 @@
     function renderBatchTimings() {
       const container = document.getElementById('batch-timings-grid');
       container.innerHTML = ALL_STANDARDS.map(std => {
-        const tObj = cachedBatchTimings.find(t => t.standard === std);
+        const tObj = cachedBatchTimings.find(t => t.standard === std && (t.medium || 'English') === currentMedium);
         const morning = tObj ? tObj.morning_batch : '07:00 AM - 09:30 AM';
         const evening = tObj ? tObj.evening_batch : '04:00 PM - 07:00 PM';
 
         return `
           <div class="setting-card">
             <div>
-              <div style="font-weight:800; font-size:0.95rem; color:#fff;">${std}</div>
+              <div style="font-weight:800; font-size:0.95rem; color:#fff;">${std} <span class="medium-tag">${currentMedium}</span></div>
               <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
                 ☀️ Morning: <span style="color:var(--accent-orange); font-weight:700;">${morning}</span><br/>
                 🌙 Evening: <span style="color:#2ed573; font-weight:700;">${evening}</span>
@@ -2724,9 +2836,11 @@
       }).join('');
     }
 
+    let timingModalMedium = 'English';
     function openTimingModal(std, morning, evening) {
+      timingModalMedium = currentMedium;
       document.getElementById('timing-std').value = std;
-      document.getElementById('timing-modal-std').innerText = std;
+      document.getElementById('timing-modal-std').innerText = `${std} (${currentMedium} Medium)`;
       document.getElementById('timing-morning').value = morning;
       document.getElementById('timing-evening').value = evening;
       document.getElementById('timing-modal').style.display = 'flex';
@@ -2745,7 +2859,7 @@
         const res = await fetch('/api/admin/batch-timings', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ standard: std, morning_batch: morning, evening_batch: evening })
+          body: JSON.stringify({ standard: std, medium: timingModalMedium, morning_batch: morning, evening_batch: evening })
         });
         const data = await res.json();
         if(res.ok) {
@@ -2761,15 +2875,15 @@
     function renderFeesManager() {
       const container = document.getElementById('standard-fees-grid');
       container.innerHTML = ALL_STANDARDS.map(std => {
-        const feeObj = cachedStandardFees.find(f => f.standard === std);
+        const feeObj = cachedStandardFees.find(f => f.standard === std && (f.medium || 'English') === currentMedium);
         const currentFee = feeObj ? Number(feeObj.fee_amount) : 15000;
         const monthlyFee = feeObj ? Number(feeObj.default_monthly_fee || 1500) : 1500;
-        const studentCount = cachedStudents.filter(s => s.standard === std).length;
+        const studentCount = studentsInMedium().filter(s => s.standard === std).length;
 
         return `
           <div class="setting-card">
             <div>
-              <div style="font-weight:800; font-size:0.95rem;">${std}</div>
+              <div style="font-weight:800; font-size:0.95rem;">${std} <span class="medium-tag">${currentMedium}</span></div>
               <div style="font-size:0.75rem; color:var(--text-muted);">${studentCount} Students Enrolled</div>
               <div style="color:var(--accent-orange); font-weight:800; font-size:1.1rem; margin-top:4px;">₹${currentFee.toLocaleString()} / year</div>
               <div style="font-size:0.75rem; color:#2ed573; font-weight:700;">₹${monthlyFee.toLocaleString()} / month</div>
@@ -2782,9 +2896,11 @@
       }).join('');
     }
 
+    let feeModalMedium = 'English';
     function openClassFeeModal(std, currentFee, monthlyFee) {
+      feeModalMedium = currentMedium;
       document.getElementById('modal-fee-std').value = std;
-      document.getElementById('modal-fee-std-display').value = std;
+      document.getElementById('modal-fee-std-display').value = `${std} (${currentMedium} Medium)`;
       document.getElementById('modal-fee-amount').value = currentFee;
       document.getElementById('modal-fee-monthly').value = monthlyFee;
       document.getElementById('modal-fee-apply-existing').checked = true;
@@ -2810,7 +2926,7 @@
         const res = await fetch('/api/admin/standard-fee', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ standard: std, fee_amount: feeAmount, default_monthly_fee: monthlyAmount, update_existing: applyExisting })
+          body: JSON.stringify({ standard: std, medium: feeModalMedium, fee_amount: feeAmount, default_monthly_fee: monthlyAmount, update_existing: applyExisting })
         });
         const data = await res.json();
         if (res.ok) {
@@ -2826,7 +2942,8 @@
     // STUDENT DIRECTORY
     function renderStandardChips() {
       const container = document.getElementById('std-filter-bar');
-      const allCount = cachedStudents.length;
+      const mediumStudents = studentsInMedium();
+      const allCount = mediumStudents.length;
 
       let html = `
         <div class="std-chip ${selectedStandardFilter === 'ALL' ? 'active' : ''}" onclick="selectStandardFilter('ALL')">
@@ -2835,7 +2952,7 @@
       `;
 
       ALL_STANDARDS.forEach(std => {
-        const count = cachedStudents.filter(s => s.standard && s.standard.toLowerCase().trim() === std.toLowerCase().trim()).length;
+        const count = mediumStudents.filter(s => s.standard && s.standard.toLowerCase().trim() === std.toLowerCase().trim()).length;
         const isActive = selectedStandardFilter === std ? 'active' : '';
         html += `
           <div class="std-chip ${isActive}" onclick="selectStandardFilter('${std}')">
@@ -2857,7 +2974,7 @@
       const searchInput = document.getElementById('student-search-input');
       const searchQuery = (searchInput?.value || '').toLowerCase().trim();
       
-      let filtered = cachedStudents;
+      let filtered = studentsInMedium();
       if (selectedStandardFilter !== 'ALL') {
         filtered = filtered.filter(s => s.standard && s.standard.toLowerCase().trim() === selectedStandardFilter.toLowerCase().trim());
       }
@@ -2872,7 +2989,7 @@
 
       const tbody = document.getElementById('students-tbody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">No students found matching this criteria.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:2rem;">No students found in ${currentMedium} Medium for this selection.</td></tr>`;
         return;
       }
 
@@ -2889,6 +3006,7 @@
             </td>
             <td>
               <span style="color:var(--accent-orange); font-weight:700;">${s.standard}</span>
+              <div><span class="medium-tag">${medOf(s)} Medium</span></div>
             </td>
             <td>
               <div style="color:#eee;">${s.email}</div>
@@ -2929,6 +3047,7 @@
       document.getElementById('edit-name').value = s.name;
       document.getElementById('edit-email').value = s.email;
       document.getElementById('edit-phone').value = s.phone || '';
+      document.getElementById('edit-medium').value = medOf(s);
       document.getElementById('edit-std').value = s.standard;
       document.getElementById('edit-payment-plan').value = s.payment_plan || 'One-Time';
       document.getElementById('edit-monthly-fee').value = s.monthly_fee || 1500;
@@ -2955,6 +3074,7 @@
       const email = document.getElementById('edit-email').value.trim();
       const phone = document.getElementById('edit-phone').value.trim();
       const standard = document.getElementById('edit-std').value;
+      const medium = document.getElementById('edit-medium').value;
       const payment_plan = document.getElementById('edit-payment-plan').value;
       const monthly_fee = Number(document.getElementById('edit-monthly-fee').value) || 0;
       const total_fees = Math.max(0, Number(document.getElementById('edit-total-fees').value) || 15000);
@@ -2978,7 +3098,7 @@
         const res = await fetch(`/api/admin/student/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ name, email, standard, phone, fee_status, paid_amount, total_fees, payment_plan, monthly_fee })
+          body: JSON.stringify({ name, email, standard, medium, phone, fee_status, paid_amount, total_fees, payment_plan, monthly_fee })
         });
         const data = await res.json();
         if (res.ok) {
@@ -3114,7 +3234,7 @@
       const res = await fetch('/api/admin/materials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ title, standard, subject, file_link, file_data, file_name })
+        body: JSON.stringify({ title, standard, medium: document.getElementById('mat-medium').value, subject, file_link, file_data, file_name })
       });
 
       btn.innerText = 'ADD STUDY MATERIAL →';
